@@ -1,20 +1,25 @@
 #!/bin/bash
 
+if [ -z $1 ]
+then
+echo "usage:"
+echo "convert_brats.sh /path/to/created/brats_coco/"
+exit 1
+
+fi
+
 move_files(){
+	files=("$1"/*)
+	size=${#files[@]}
 
-files=("$1"/*)
-size=${#files[@]}
-# echo $size
-for ((i=0;i<$size;i++));
-do
-mv ${files[$i]}/*flair.nii flair
-mv ${files[$i]}/*t2.nii t2
-mv ${files[$i]}/*t1ce.nii t1ce
-mv ${files[$i]}/*t1.nii t1
-mv ${files[$i]}/*seg.nii seg
-
-done
-
+	for ((i=0;i<$size;i++));
+	do
+	mv ${files[$i]}/*flair.nii.gz flair
+	mv ${files[$i]}/*t2.nii.gz t2
+	mv ${files[$i]}/*t1ce.nii.gz t1ce
+	mv ${files[$i]}/*t1.nii.gz t1
+	mv ${files[$i]}/*seg.nii.gz seg
+	done
 }
 
 unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
@@ -27,6 +32,7 @@ move_files "LGG"
 
 rm -r HGG LGG
 gunzip -vr *
-
-#matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC($1, $2), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
+#echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
+#echo $2
+matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC($(pwd)/'MICCAI_BraTS17_Data_Training/', $1), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
 #python 
