@@ -416,7 +416,7 @@ def inference(
 
     print('type(predictions)')
     print(type(predictions))
-    print(predictions)
+    #print(predictions)
 
     # logger.info("Preparing results for COCO format")
     # coco_results = {}
@@ -430,7 +430,7 @@ def inference(
     coco_results = prepare_for_coco_segmentation(predictions, dataset)
     print('type(coco_results)')
     print(type(coco_results))
-    print(coco_results)
+    #print(coco_results)
 
 
     # results = COCOResults(*iou_types)
