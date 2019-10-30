@@ -17,9 +17,9 @@ function convert_BRATS17_VOC()
         output_img = [output_path, 'images/']; mkdir(output_img);
         output_label = [output_path, 'labels/']; mkdir(output_label);
         output_mask = [output_path, 'masks/']; mkdir(output_mask);
-        subsec0 = '_'+mode+'.nii';
+        mode_file_end = '_'+mode+'.nii';
         
-        create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, seg_file_end, label);
+        create_data(input_path, seg_path, output_img, output_label, output_mask, mode_file_end, seg_file_end, label);
     end
     
     % flair_label = [1, 2, 3, 4]; %whole tumor

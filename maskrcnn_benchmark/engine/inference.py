@@ -374,8 +374,8 @@ class DiceEval(object):
         self._paramsEval = {}               # parameters for evaluation
         self.stats = []                     # result summarization
         self.ious = {}                      # ious between all gts and dts
-        self.params.imgIds = sorted(cocoGt.getImgIds())
-        self.params.catIds = sorted(cocoGt.getCatIds())
+        self.params.imgIds = sorted(coco_gt.getImgIds())
+        self.params.catIds = sorted(coco_gt.getCatIds())
 
 
     def _prepare(self):
