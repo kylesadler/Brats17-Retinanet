@@ -438,7 +438,7 @@ class DiceEval(object):
         # loop through images, area range, max detection number
         catIds = p.catIds if p.useCats else [-1]
 
-        self.ious = {(imgId, catId): computeDice(imgId, catId) \
+        self.ious = {(imgId, catId): self.computeDice(imgId, catId) \
                         for imgId in p.imgIds
                         for catId in catIds}
 
