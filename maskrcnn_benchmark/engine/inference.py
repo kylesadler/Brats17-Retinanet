@@ -414,9 +414,9 @@ def inference(
     #         torch.save(res, os.path.join(output_folder, "box_proposals.pth"))
     #     return
 
-    print('type(predictions)')
-    print(type(predictions))
-    #print(predictions)
+    # print('type(predictions)')
+    # print(type(predictions)) list
+    print(predictions)
 
     # logger.info("Preparing results for COCO format")
     # coco_results = {}
@@ -428,8 +428,8 @@ def inference(
     #     coco_results["segm"] = prepare_for_coco_segmentation(predictions, dataset)
     
     coco_results = prepare_for_coco_segmentation(predictions, dataset)
-    print('type(coco_results)')
-    print(type(coco_results))
+    # print('type(coco_results)') list
+    # print(type(coco_results))
     #print(coco_results)
 
 
