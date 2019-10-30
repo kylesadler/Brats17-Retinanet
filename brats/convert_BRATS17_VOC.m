@@ -1,62 +1,39 @@
 function convert_BRATS17_VOC()
 % % % % ====================================== Flair 
 % % % % Whole Tumor (Flair) : 2
-    input_dir = '/home/kyle/datasets/brats/'    % where brats is located
-    output_dir = '/home/kyle/datasets/brats_VOC/'   % where brats VOC is to be created 
-    subsec1 = '_seg.nii';
+    input_dir = '/home/kyle/datasets/brats/'        % where brats is located
+    output_dir = '/home/kyle/datasets/brats_VOC/'   % where brats VOC is created 
+    seg_file_end = '_seg.nii';
+    modes = ["flair", "t1", "t2", "t1ce"]
+    labels = [[1,2,3,4], 1, 3, 4]
 
-    for mode = ["flair", "t1", "t1ce", "t2"]
+    for i = 1:len(modes)
+        mode = modes[i]
+        label = labels[i]
 
-        input_path = [input_dir, '/'];
-        seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
-        output_path = '/home/kyle/datasets/brats_voc/flair/'; mkdir(output_path);
+        input_path = [input_dir, mode+"/"];
+        seg_path = [output_dir, "seg/"];
+        output_path = [output_dir, mode+"/"]; mkdir(output_path);
         output_img = [output_path, 'images/']; mkdir(output_img);
         output_label = [output_path, 'labels/']; mkdir(output_label);
         output_mask = [output_path, 'masks/']; mkdir(output_mask);
-        subsec0 = '_flair.nii';
+        subsec0 = '_'+mode+'.nii';
         
-        flair_label= [1, 2, 3, 4]; %whole tumor
-        create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, flair_label);
+        create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, seg_file_end, label);
     end
     
-    
-    input_path = '/home/kyle/datasets/brats_voc/nii/t1/';
-    seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
-    output_path = '/home/kyle/datasets/brats_voc/t1/'; mkdir(output_path);
-    output_img = [output_path, 'images/']; mkdir(output_img);
-    output_label = [output_path, 'labels/']; mkdir(output_label);
-    output_mask = [output_path, 'masks/']; mkdir(output_mask);
-    subsec0 = '_t1.nii';
-    t1_label= 1;
-    create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t1_label);
-    
-    input_path = '/home/kyle/datasets/brats_voc/nii/t2/';
-    seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
-    output_path = '/home/kyle/datasets/brats_voc/t2/'; mkdir(output_path);
-    output_img = [output_path, 'images/']; mkdir(output_img);
-    output_label = [output_path, 'labels/']; mkdir(output_label);
-    output_mask = [output_path, 'masks/']; mkdir(output_mask);
-    subsec0 = '_t2.nii';
-    t2_label= 3;
-    create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t2_label);
-    
-    input_path = '/home/kyle/datasets/brats_voc/nii/t1ce/';
-    seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
-    output_path = '/home/kyle/datasets/brats_voc/t1ce/'; mkdir(output_path);
-    output_img = [output_path, 'images/']; mkdir(output_img);
-    output_label = [output_path, 'labels/']; mkdir(output_label);
-    output_mask = [output_path, 'masks/']; mkdir(output_mask);
-    subsec0 = '_t1ce.nii';
-    t1ce_label= 4;
-    create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t1ce_label);
+    % flair_label = [1, 2, 3, 4]; %whole tumor
+    % t1_label= 1;
+    % t2_label= 3;
+    % t1ce_label= 4;
     
 end
 
-function create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, subsec1, flair_label)
+function create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label)
     input_list = dir([input_path, '*.nii']);
     for i = 1 : length(input_list)        
         input_name = input_list(i).name;
-        seg_name = strrep(input_name, subsec0, subsec1);
+        seg_name = strrep(input_name, subsec0, seg_file_end);
         if isfile([input_path, input_name]) && isfile([seg_path, seg_name])
             info  = nii_read_header([input_path, input_name]);
             V = nii_read_volume(info);

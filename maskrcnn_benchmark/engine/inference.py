@@ -370,7 +370,7 @@ class DiceEval(object):
         self.eval     = {}                  # accumulated evaluation results
         self._gts = defaultdict(list)       # gt for evaluation
         self._dts = defaultdict(list)       # dt for evaluation
-        self.params = Params(iouType=iouType) # parameters
+        self.params = Params(iouType="segm") # parameters
         self._paramsEval = {}               # parameters for evaluation
         self.stats = []                     # result summarization
         self.ious = {}                      # ious between all gts and dts
