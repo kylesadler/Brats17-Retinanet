@@ -454,6 +454,8 @@ class DiceEval(object):
         toc = time.time()
         print('DONE (t={:0.2f}s).'.format(toc-tic))
 
+
+
     def computeDice(self, imgId, catId):
         p = self.params
         if p.useCats:
@@ -475,17 +477,19 @@ class DiceEval(object):
         # compute iou between each dt and gt region
         iscrowd = [int(o['iscrowd']) for o in gt]
 
-
         """
             g is groundtruth 
             d is detections
-            compute the dice score
+            compute the overall dice score
         """
-        ious = maskUtils.iou(d,g,iscrowd)
-        print(ious)
-        print(type(ious))
-        exit()
-        return ious
+        # ious = maskUtils.iou(d,g,iscrowd)
+        # print(ious)
+        # print(type(ious))
+        # exit()
+        dice = 0
+        return dice
+
+
 
     def evaluateImg(self, imgId, catId, aRng, maxDet):
         '''

@@ -1,6 +1,7 @@
 #!/bin/bash
 unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
+mkdir
 
 files=(HGG/*)
 size=${#files[@]}
