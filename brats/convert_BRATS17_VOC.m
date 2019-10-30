@@ -1,8 +1,11 @@
 function convert_BRATS17_VOC()
 % % % % ====================================== Flair 
 % % % % Whole Tumor (Flair) : 2
+    data_dir = '/home/kyle/datasets/brats/'
 
-    input_path = '/home/kyle/datasets/brats_voc/nii/flair/';
+
+    % flair
+    input_path = 'brats_voc/nii/flair/';
     seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
     output_path = '/home/kyle/datasets/brats_voc/flair/'; mkdir(output_path);
     output_img = [output_path, 'images/']; mkdir(output_img);

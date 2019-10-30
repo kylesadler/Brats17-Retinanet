@@ -361,8 +361,8 @@ class DiceEval(object):
         :param cocoDt: coco object with detection results
         :return: None
         '''
-        self.cocoGt   = cocoGt              # ground truth COCO API
-        self.cocoDt   = cocoDt              # detections COCO API
+        self.cocoGt   = coco_gt             # ground truth COCO API
+        self.cocoDt   = coco_dt             # detections COCO API
         self.evalImgs = defaultdict(list)   # per-image per-category evaluation results [KxAxI] elements
         self.eval     = {}                  # accumulated evaluation results
         self._gts = defaultdict(list)       # gt for evaluation
