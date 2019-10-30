@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from collections import defaultdict
 import copy
+from pycocotools import mask as maskUtils
 
 import torch
 
