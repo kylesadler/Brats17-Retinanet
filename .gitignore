@@ -1,6 +1,6 @@
 10_22_19/
 inference/
-
+/__pycache__/
 */__pycache__/
 */*/__pycache__/
 */*/*/__pycache__/
