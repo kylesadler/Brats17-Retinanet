@@ -1,8 +1,8 @@
-function convert_BRATS17_VOC()
+function convert_BRATS17_VOC(input_dir, output_dir)
 % % % % ====================================== Flair 
 % % % % Whole Tumor (Flair) : 2
-    input_dir = '/home/kyle/datasets/brats/'        % where brats is located
-    output_dir = '/home/kyle/datasets/brats_VOC/'   % where brats VOC is created 
+    % input_dir = '/home/kyle/datasets/brats/'        % where brats is located
+    % output_dir = '/home/kyle/datasets/brats_VOC/'   % where brats VOC is created 
     seg_file_end = '_seg.nii';
     modes = ["flair", "t1", "t2", "t1ce"]
     labels = [[1,2,3,4], 1, 3, 4]
