@@ -1,20 +1,23 @@
 function convert_BRATS17_VOC()
 % % % % ====================================== Flair 
 % % % % Whole Tumor (Flair) : 2
-    data_dir = '/home/kyle/datasets/brats/'
-
-
-    % flair
-    input_path = 'brats_voc/nii/flair/';
-    seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
-    output_path = '/home/kyle/datasets/brats_voc/flair/'; mkdir(output_path);
-    output_img = [output_path, 'images/']; mkdir(output_img);
-    output_label = [output_path, 'labels/']; mkdir(output_label);
-    output_mask = [output_path, 'masks/']; mkdir(output_mask);
-    subsec0 = '_flair.nii';
+    input_dir = '/home/kyle/datasets/brats/'    % where brats is located
+    output_dir = '/home/kyle/datasets/brats_VOC/'   % where brats VOC is to be created 
     subsec1 = '_seg.nii';
-    flair_label= [1, 2, 3, 4]; %whole tumor
-    create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, flair_label);
+
+    for mode = ["flair", "t1", "t1ce", "t2"]
+
+        input_path = [input_dir, '/'];
+        seg_path = '/home/kyle/datasets/brats_voc/nii/seg/';
+        output_path = '/home/kyle/datasets/brats_voc/flair/'; mkdir(output_path);
+        output_img = [output_path, 'images/']; mkdir(output_img);
+        output_label = [output_path, 'labels/']; mkdir(output_label);
+        output_mask = [output_path, 'masks/']; mkdir(output_mask);
+        subsec0 = '_flair.nii';
+        
+        flair_label= [1, 2, 3, 4]; %whole tumor
+        create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, flair_label);
+    end
     
     
     input_path = '/home/kyle/datasets/brats_voc/nii/t1/';
@@ -24,7 +27,6 @@ function convert_BRATS17_VOC()
     output_label = [output_path, 'labels/']; mkdir(output_label);
     output_mask = [output_path, 'masks/']; mkdir(output_mask);
     subsec0 = '_t1.nii';
-    subsec1 = '_seg.nii';
     t1_label= 1;
     create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t1_label);
     
@@ -35,7 +37,6 @@ function convert_BRATS17_VOC()
     output_label = [output_path, 'labels/']; mkdir(output_label);
     output_mask = [output_path, 'masks/']; mkdir(output_mask);
     subsec0 = '_t2.nii';
-    subsec1 = '_seg.nii';
     t2_label= 3;
     create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t2_label);
     
@@ -46,7 +47,6 @@ function convert_BRATS17_VOC()
     output_label = [output_path, 'labels/']; mkdir(output_label);
     output_mask = [output_path, 'masks/']; mkdir(output_mask);
     subsec0 = '_t1ce.nii';
-    subsec1 = '_seg.nii';
     t1ce_label= 4;
     create_data(input_path, seg_path, output_img, output_label, output_mask, subsec0, subsec1, t1ce_label);
     
