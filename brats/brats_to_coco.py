@@ -193,12 +193,13 @@ def create_annotations(images):
 brats_dir = '/home/kyle/datasets/brats_voc'
 files = os.listdir(os.path.join(brats_dir,'flair','images'))
 # print(files)
+
+# automatically shuffles and splits trainval data 80% / 20% 
 random.Random(1).shuffle(files)
-
 trainval_split = int(0.8*len(files))
-
 train_names = files[:trainval_split]
 val_names = files[trainval_split:]
+
 brats_coco_dir = '/home/kyle/datasets/brats_coco/'
 
 
