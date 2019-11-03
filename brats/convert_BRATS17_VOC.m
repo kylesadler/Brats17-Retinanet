@@ -23,7 +23,7 @@ function convert_BRATS17_VOC(input_dir, output_dir)
     end
     
     % flair_label = [1, 2, 3, 4]; %whole tumor
-    % t1_label= 1;
+    % t1_label= 1; % tumor core?
     % t2_label= 3;
     % t1ce_label= 4;
     
@@ -31,14 +31,14 @@ end
 
 function create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label)
     input_list = dir([input_path, '*.nii']);
-    for i = 1 : length(input_list)        
+    for i = 1 : length(input_list)   % for each file in input_dir   
         input_name = input_list(i).name;
         seg_name = strrep(input_name, subsec0, seg_file_end);
         if isfile([input_path, input_name]) && isfile([seg_path, seg_name])
             info  = nii_read_header([input_path, input_name]);
-            V = nii_read_volume(info);
+            V = nii_read_volume(info); % mode
             info  = nii_read_header([seg_path, seg_name]);
-            V1 = nii_read_volume(info);
+            V1 = nii_read_volume(info); % seg
             for j = 1 : size(V, 3)
                 I = V(:,:,j);
                 I = double(I);

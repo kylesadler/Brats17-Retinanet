@@ -6,6 +6,7 @@ from skimage import measure                        # (pip install scikit-image)
 from shapely.geometry import Polygon, MultiPolygon # (pip install Shapely)
 import json
 import os
+import sys
 import random
 
 def ensure_exists(path):
@@ -190,7 +191,7 @@ def create_annotations(images):
 
 
 
-brats_dir = '/home/kyle/datasets/brats_voc'
+brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
 files = os.listdir(os.path.join(brats_dir,'flair','images'))
 # print(files)
 
@@ -200,7 +201,7 @@ trainval_split = int(0.8*len(files))
 train_names = files[:trainval_split]
 val_names = files[trainval_split:]
 
-brats_coco_dir = '/home/kyle/datasets/brats_coco/'
+brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_coco/'
 
 
 
