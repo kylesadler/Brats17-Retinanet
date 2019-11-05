@@ -1,5 +1,43 @@
 import nibabel
 
+"""
+	purpose: convert brats dataset into coco format
+	
+	input format:
+		BraTS is originally in 240 x 240 x 150 data format
+		[height, width, depth] with four modality .nii and one
+		segmentation .nii
+	
+	output format:
+		(240*4) x 240 x 3 grayscale images of the four modes
+		stacked on top of each other
+		
+		target is label of the brain stacked 4 times
+		
+		repeat for each view (axial, sagitarial, corneal)
+		repeat for each type: whole tumor, core, edema
+		
+		output_dir
+			|-> edema
+			|-> enhancing_core
+			|-> whole_tumor
+				|-> corneal
+				|-> sagitarial
+				|-> axial
+					|-> labels
+					|-> masks
+					|-> images
+						|-> 0000001.png
+						|-> 0000002.png
+						...
+		
+	labels: 
+	1,2,3,4 = “edema,”
+“non-enhancing (solid) core,” “necrotic (or fluid-filled) core,”
+and “non-enhancing core
+	
+"""
+
 def create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label):
     input_list = dir([input_path, '*.nii']);
     for i = 1 : length(input_list)   % for each file in input_dir   
@@ -44,34 +82,103 @@ def create_data(input_path, seg_path,  output_img, output_label, output_mask, su
 
     end
 
+def mkdir(path):
+	if(not path.exists(path)):
+		os.mkdir(path)
+
+'''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
+output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created '''
 
 
-input_dir = '/home/kyle/datasets/brats/'        # where brats is located
-output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
+input_dir = sys.argv[1] # where brats is located
+
+output_dir = sys.argv[2] # where brats VOC is created
+
 seg_file_end = '_seg.nii'
+
+directions = ["axial", "corneal", "sagitarial"]
 modes = ["flair", "t1", "t2", "t1ce"]
-labels = [[1,2,3,4], 1, 3, 4]
+folders = ["images", "labels", "masks"]
 
-for i in range(len(modes))
-    mode = modes[i]
-    label = labels[i]
 
-    input_path = os.path.join(input_dir, mode+"/")
-    seg_path = os.path.join(output_dir, "seg/")
-    output_path = os.path.join(output_dir, mode+"/"]
-    mkdir(output_path)
-    output_img = os.path.join(output_path, 'images/']
-    mkdir(output_img)
-    output_label = os.path.join(output_path, 'labels/')
-    mkdir(output_label)
-    output_mask = os.path.join(output_path, 'masks/')
-    mkdir(output_mask)
-    mode_file_end = '_'+mode+'.nii'
-    
-    create_data(input_path, seg_path, output_img, output_label, output_mask, mode_file_end, seg_file_end, label)
+labels = ["whole_tumor":[1,2,3,4], "enhancing_core":1, "edema":3, 4]
+
+for labeltype in labels:
+	label = labels[labeltype]
+	labeltype_path = os.path.join(output_dir, labeltype)
+	mkdir(labeltype_path)
+
+	for direction in directions:
+		output_path = os.path.join(labeltype_path, direction)
+		img_folder = os.path.join(output_path, "images")
+		label_folder = os.path.join(output_path, "labels")
+		
+		mkdir(output_path)
+		mkdir(img_folder)
+		mkdir(label_folder)
+			
+	    file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
+	    print('file_ids')
+	    print(file_ids)
+	    	
+	    for file_id in file_ids: # process each set of files
+			
+			
+			seg_data_temp = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
+			seg_data = seg_data_temp > 0 + np.zeros(seg_data_temp.shape)
+			
+			for l in label:
+				seg_data += seg_data_temp = l 
+			print('seg_data.shape')
+			print(seg_data.shape)
+			
+			file_id_data = [] # "flair", "t1", "t2", "t1ce"
+			for mode in modes:
+				
+				# depth, width, height
+				data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
+				print('data.shape')
+				print(data.shape)
+				assert(seg_data.shape == data.shape)
+				
+				file_id_data.append(data)
+				
+			
+			# transpose so axis 0 is sliced
+			if(direction == "axial"):
+				# np.transpose(data, [2,1,0])
+				# np.transpose(seg_data, [2,1,0])
+			elif(direction == "corneal"):
+				# np.transpose(data, [2,1,0])
+				# np.transpose(seg_data, [2,1,0])
+			elif(direction == "sagitarial"):
+				# np.transpose(data, [2,1,0])
+				# np.transpose(seg_data, [2,1,0])
+			else:
+				raise
+			
+			# slice images and save
+			for i in range(data.shape[0]):
+				img = np.concatenate(file_id_data[:][i:i+1,:,:], axis=0)
+				seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+				print('img.shape')
+				print(img.shape)
+				Image.write(img)
+				Image.write(seg)
+				
+		
+		
+def get_file_id(file):
+	return "_".join(file.split("_")[:-1])
+
+		
 """end
 
 % flair_label = [1, 2, 3, 4]; %whole tumor
 % t1_label= 1; % tumor core?
 % t2_label= 3;
-% t1ce_label= 4;"""
+% t1ce_label= 4;
+
+Le 645
+
+"""
