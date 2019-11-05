@@ -1,4 +1,5 @@
 import nibabel
+import os
 
 """
 	purpose: convert brats dataset into coco format
