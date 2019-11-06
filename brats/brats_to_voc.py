@@ -18,15 +18,15 @@ from PIL import Image
 		
 		target is label of the brain stacked 4 times
 		
-		repeat for each view (axial, sagitarial, corneal)
-		repeat for each type: whole tumor, core, edema
+		repeat for each view (axial, sagittal, corneal)
+		repeat for each type: whole_tumor, tumor_core, active_tumor
 		
 		output_dir
-			|-> edema
-			|-> enhancing_core
+			|-> active_tumor
+			|-> tumor_core
 			|-> whole_tumor
 				|-> corneal
-				|-> sagitarial
+				|-> sagittal
 				|-> axial
 					|-> labels
 					|-> masks
@@ -36,7 +36,7 @@ from PIL import Image
 						...
 		
 	labels: 
-	1,2,3,4 = “edema,”
+	1,2,3,4 = active_tumor,”
 “non-enhancing (solid) core,” “necrotic (or fluid-filled) core,”
 and “non-enhancing core
 	
@@ -98,6 +98,7 @@ def get_file_id(file):
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
 output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created '''
 
+# TODO check direction and labels
 
 input_dir = sys.argv[1] # where brats is located
 
@@ -106,12 +107,12 @@ mkdir(output_dir)
 
 seg_file_end = '_seg.nii'
 
-directions = ["axial", "corneal", "sagitarial"]
+directions = ["axial", "corneal", "sagittal"]
 modes = ["flair", "t1", "t2", "t1ce"]
 folders = ["images", "labels", "masks"]
 
 
-labels = {"whole_tumor":[1,2,3,4], "enhancing_core":1, "edema":3, "none":4}
+labels = {"whole_tumor":[1,2,3,4], "tumor_core":1, "active_tumor":3, "none":4}
 
 for labeltype in labels:
     label = labels[labeltype]
@@ -144,44 +145,68 @@ for labeltype in labels:
             file_id_data = [] # "flair", "t1", "t2", "t1ce"
             for mode in modes:
                 
-                # depth, width, height
+                # height, width, depth
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
                 # print('data.shape') (240, 240, 155)
                 # print(data.shape)
                 assert(seg_data.shape == data.shape)
                 
                 file_id_data.append(data)
-            file_id_data = np.concatenate(file_id_data, axis=0)
                 
 
             # transpose so axis 0 is sliced
             if(direction == "axial"):
-                pass
-                # np.transpose(data, [2,1,0])
-                # np.transpose(seg_data, [2,1,0])
+                
+                file_id_data = np.concatenate(file_id_data, axis=0)
+                # slice images and save
+                for i in range(data.shape[0]):
+                    print('file_id_data.shape') #(4, 240, 240, 155)
+                    print(file_id_data.shape)
+                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
+                    print(file_id_data[:,i:i+1,:,:].shape) 
+                    img = file_id_data[:,i:i+1,:,:]
+                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+                    # print('img.shape') (4, 1, 240, 155)
+                    # print(img.shape)
+                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+            
             elif(direction == "corneal"):
-                pass
-                # np.transpose(data, [2,1,0])
-                # np.transpose(seg_data, [2,1,0])
-            elif(direction == "sagitarial"):
-                pass
-                # np.transpose(data, [2,1,0])
-                # np.transpose(seg_data, [2,1,0])
+                
+                file_id_data = np.concatenate(file_id_data, axis=1)
+                np.transpose(file_id_data, [2,1,0])
+                # slice images and save
+                for i in range(data.shape[0]):
+                    print('file_id_data.shape') #(4, 240, 240, 155)
+                    print(file_id_data.shape)
+                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
+                    print(file_id_data[:,i:i+1,:,:].shape) 
+                    img = file_id_data[:,i:i+1,:,:]
+                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+                    # print('img.shape') (4, 1, 240, 155)
+                    # print(img.shape)
+                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+            
+            elif(direction == "sagittal"):
+                
+                file_id_data = np.concatenate(file_id_data, axis=0)
+                # slice images and save
+                for i in range(data.shape[0]):
+                    print('file_id_data.shape') #(4, 240, 240, 155)
+                    print(file_id_data.shape)
+                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
+                    print(file_id_data[:,i:i+1,:,:].shape) 
+                    img = file_id_data[:,i:i+1,:,:]
+                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+                    # print('img.shape') (4, 1, 240, 155)
+                    # print(img.shape)
+                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+            
             else:
                 raise
 
-            # slice images and save
-            for i in range(data.shape[0]):
-                print('file_id_data.shape') #(4, 240, 240, 155)
-                print(file_id_data.shape)
-                print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                print(file_id_data[:,i:i+1,:,:].shape) 
-                img = file_id_data[:,i:i+1,:,:]
-                seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                # print('img.shape') (4, 1, 240, 155)
-                # print(img.shape)
-                Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
 
 		
 """end
