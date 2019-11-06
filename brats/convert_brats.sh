@@ -22,6 +22,8 @@ move_files(){
 	done
 }
 
+start=$(pwd)
+
 cd $1
 
 # unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
@@ -41,5 +43,5 @@ brats_voc_dir=$(pwd)'/../brats2017_voc/'
 mkdir $brats_voc_dir
 # matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC('$(pwd)', '$brats_voc_dir'), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
 
-python brats_to_voc.py $(pwd) $brats_voc_dir
-python brats_to_coco.py $brats_voc_dir $2
+python $start'brats_to_voc.py' $(pwd) $brats_voc_dir
+python $start'brats_to_coco.py' $brats_voc_dir $2
