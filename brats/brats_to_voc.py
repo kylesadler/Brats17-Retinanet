@@ -128,7 +128,7 @@ for labeltype in labels:
             seg_data = seg_data_temp > 0 + np.zeros(seg_data_temp.shape)
 
             for l in label:
-                seg_data += seg_data_temp = l 
+                seg_data += seg_data_temp == l 
             print('seg_data.shape')
             print(seg_data.shape)
 
