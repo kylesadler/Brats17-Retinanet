@@ -102,7 +102,7 @@ modes = ["flair", "t1", "t2", "t1ce"]
 folders = ["images", "labels", "masks"]
 
 
-labels = ["whole_tumor":[1,2,3,4], "enhancing_core":1, "edema":3, 4]
+labels = {"whole_tumor":[1,2,3,4], "enhancing_core":1, "edema":3, "none":4]
 
 for labeltype in labels:
 	label = labels[labeltype]
