@@ -94,6 +94,21 @@ def mkdir(path):
 def get_file_id(file):
 	return "_".join(file.split("_")[:-1])
 
+def check(nparray):
+	assert(nparray.shape == (960, 240))
+    assert(np.max(nparray) == 255)
+    assert(np.min(nparray) == 0)
+    
+def get_slice(ndarray, slice_axis, i):
+	if(slice_axis == 0):
+		return ndarray[i,:,:]
+	elif(slice_axis == 1):
+		return ndarray[:,i,:]
+	elif(slice_axis == 2):
+		return ndarray[:,:,i]
+	else:
+		raise
+		
 
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
 output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
@@ -125,7 +140,10 @@ directions = ["axial", "coronal", "sagittal"]
 modes = ["flair", "t1", "t2", "t1ce"]
 folders = ["images", "labels", "masks"]
 
-labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4} #, "none":4}
+# things to set to 2 (target region)
+labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4}
+
+slice_axes = {"coronal":0, "sagittal":1, "axial":2}
 
 for labeltype in labels:
     label = labels[labeltype]
@@ -142,96 +160,55 @@ for labeltype in labels:
         mkdir(label_folder)
 
         file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
+        slice_axis = slice_axes[direction]
+        
         # print('file_ids')
         # print(file_ids)
 	    	
         for file_id in file_ids: # process each set of files
 
 			# seg data should be 1: healthy brain, 2: labeltype, 0:background
-            seg_data_temp = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
-            seg_data = seg_data_temp > 0 # + np.zeros(seg_data_temp.shape)
-
+            
+            # prepare segmentation data label
+            raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
+        	
+        	assert(raw_seg_data.shape == (240, 240, 155)) 
+            seg_data = raw_seg_data > 0 # + np.zeros(raw_seg_data.shape)
             for l in label:
-                seg_data += seg_data_temp == l 
-            # print('seg_data.shape') (240, 240, 155)
-            # print(seg_data.shape)
-
-            file_id_data = [] # "flair", "t1", "t2", "t1ce"
+                seg_data += raw_seg_data == l 
+            
+			assert(seg_data.shape == (240, 240, 155)) 
+			
+			seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
+            
+            
+			
+			# load all mri scans from patient
+            file_data = [] # "flair", "t1", "t2", "t1ce"
             for mode in modes:
                 
-                # height, width, depth
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                # print('data.shape') (240, 240, 155)
-                # print(data.shape)
-                assert(seg_data.shape == data.shape)
-                
-                file_id_data.append(data)
-                
+                assert(data.shape == (240, 240, 155)) 
+                file_data.append(data)
 
-
-            """
-			
-			slicing z is axial
-			slicing y is sagittal
-			slicing x is coronal
-			
-            """
-            # transpose so axis 0 is sliced
-            if(direction == "axial"):
-                file_id_data = np.concatenate(file_id_data, axis=0)
-                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                assert(file_id_data.shape == (960, 240, 155))
-                assert(seg_data.shape == (960, 240, 155))
-                
-                # slice images and save
-                for i in range(file_id_data.shape[2]):
-                    img = file_id_data[:,:,i]
-                    seg = seg_data[:,:,i]
-                    
-                    assert(img.shape == (960, 240))
-                    assert(seg.shape == (960, 240))
-					
-                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
-            elif(direction == "coronal"):
-                file_id_data = np.concatenate(file_id_data, axis=1)
-                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=1)
-                assert(file_id_data.shape == (960, 240, 155))
-                assert(seg_data.shape == (960, 240, 155))
-                
-                # slice images and save
-                for i in range(file_id_data.shape[0]):
-                    img = file_id_data[i,:,:]
-                    seg = seg_data[i,:,:]
-                    
-                    assert(img.shape == (960, 240))
-                    assert(seg.shape == (960, 240))
-					
-                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+			file_data = np.concatenate(file_data, axis=slice_axis)
             
-            elif(direction == "sagittal"):
-                file_id_data = np.concatenate(file_id_data, axis=0)
-                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                assert(file_id_data.shape == (960, 240, 155))
-                assert(seg_data.shape == (960, 240, 155))
-                
-                # slice images and save
-                for i in range(file_id_data.shape[1]):
-                    img = file_id_data[:,i,:]
-                    seg = seg_data[:,i,:]
-                    
-                    assert(img.shape == (960, 240))
-                    assert(seg.shape == (960, 240))
-					
-                    Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                    Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
-            else:
-                raise
-
-
+            assert(file_data.shape == (960, 240, 155))
+            assert(seg_data.shape == (960, 240, 155))
+            
+            # slice images and save
+            for i in range(file_data.shape[slice_axis]):
+                img = get_slice(file_data, slice_axis, i)
+                seg = get_slice(seg_data, slice_axis, i)
+                
+                check(img)
+                check(seg)
+                
+                Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+            
 		
 """end
 
