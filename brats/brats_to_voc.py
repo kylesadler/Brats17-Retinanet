@@ -151,7 +151,7 @@ for labeltype in labels:
                 assert(seg_data.shape == data.shape)
                 
                 file_id_data.append(data)
-            file_id_data = np.asarray(file_id_data)
+            file_id_data = np.concatenate(file_id_data, axis=0)
                 
 
             # transpose so axis 0 is sliced
@@ -172,10 +172,10 @@ for labeltype in labels:
 
             # slice images and save
             for i in range(data.shape[0]):
-                print('file_id_data.shape')
+                print('file_id_data.shape') (4, 240, 240, 155)
                 print(file_id_data.shape)
-                print('file_id_data[:,i:i+1,:,:].shape')
-                print(file_id_data[:,i:i+1,:,:].shape)
+                print('file_id_data[:,i:i+1,:,:].shape') (4, 1, 240, 155)
+                print(file_id_data[:,i:i+1,:,:].shape) 
                 img = file_id_data[:,i:i+1,:,:]
                 seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 # print('img.shape') (4, 1, 240, 155)
