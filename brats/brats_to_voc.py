@@ -95,7 +95,15 @@ def get_file_id(file):
 	return "_".join(file.split("_")[:-1])
 
 def check(nparray):
-	assert(nparray.shape == (960, 240))
+	if(slice_axis == 0):
+		assert(nparray.shape == (240, 620))
+	elif(slice_axis == 1):
+		assert(nparray.shape == (960, 155))
+	elif(slice_axis == 2):
+		assert(nparray.shape == (960, 240))
+	else:
+		raise
+	
 	assert(np.max(nparray) == 255)
 	assert(np.min(nparray) == 0)
     
@@ -185,19 +193,9 @@ for labeltype in labels:
                 assert(data.shape == (240, 240, 155))
                 file_data.append(data)
 
-            file_data = np.concatenate(file_data, axis=slice_axis)
-            if(slice_axis == 0):
-                correct_shape = (960, 240, 155)
-            elif(slice_axis == 1):
-                correct_shape = (240, 960, 155)
-            elif(slice_axis == 2):
-                correct_shape = (240, 240, 620)
-
-            print(file_data.shape)
-            print(seg_data.shape)
-            print(correct_shape)
-            assert(file_data.shape == correct_shape)
-            assert(seg_data.shape == correct_shape)
+            file_data = np.concatenate(file_data, axis=slice_axis-1)
+            
+            assert(file_data.shape == seg_data.shape)
 
             # slice images and save
             for i in range(file_data.shape[slice_axis]):
