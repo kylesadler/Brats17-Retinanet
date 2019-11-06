@@ -105,11 +105,11 @@ folders = ["images", "labels", "masks"]
 labels = {"whole_tumor":[1,2,3,4], "enhancing_core":1, "edema":3, "none":4}
 
 for labeltype in labels:
-	label = labels[labeltype]
-	labeltype_path = os.path.join(output_dir, labeltype)
-	mkdir(labeltype_path)
+    label = labels[labeltype]
+    labeltype_path = os.path.join(output_dir, labeltype)
+    mkdir(labeltype_path)
 
-	for direction in directions:
+    for direction in directions:
         output_path = os.path.join(labeltype_path, direction)
         img_folder = os.path.join(output_path, "images")
         label_folder = os.path.join(output_path, "labels")
