@@ -33,7 +33,7 @@ move_files "HGG"
 move_files "LGG"
 
 rm -r HGG LGG
-gunzip -vr *
+gunzip -vr * &
 #echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
 #echo $2
 
