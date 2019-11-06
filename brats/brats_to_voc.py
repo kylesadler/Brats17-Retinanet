@@ -169,14 +169,13 @@ for labeltype in labels:
                 
 
 
-
-			"""
+            """
 			
 			slicing z is axial
 			slicing y is sagittal
 			slicing x is coronal
 			
-			"""
+            """
             # transpose so axis 0 is sliced
             if(direction == "axial"):
                 
@@ -186,7 +185,7 @@ for labeltype in labels:
                     print('file_id_data.shape')
                     print(file_id_data.shape)
                     
-                    img = file_id_data[:,:,:,i:i+1]
+                    img = file_id_data[:,:,i:i+1]
                     print('img.shape')
                     print(img.shape) 
                     
