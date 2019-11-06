@@ -174,13 +174,13 @@ for labeltype in labels:
             
             assert(raw_seg_data.shape == (240, 240, 155))
 			seg_data = raw_seg_data > 0 # + np.zeros(raw_seg_data.shape)
-            for l in label:
-                seg_data += raw_seg_data == l 
-            
+			for l in label:
+				seg_data += raw_seg_data == l 
+			
 			assert(seg_data.shape == (240, 240, 155)) 
 			
 			seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
-            
+
             
 			
 			# load all mri scans from patient
