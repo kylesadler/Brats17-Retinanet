@@ -110,17 +110,17 @@ for labeltype in labels:
 	mkdir(labeltype_path)
 
 	for direction in directions:
-		output_path = os.path.join(labeltype_path, direction)
-		img_folder = os.path.join(output_path, "images")
-		label_folder = os.path.join(output_path, "labels")
-		
-		mkdir(output_path)
-		mkdir(img_folder)
-		mkdir(label_folder)
-			
-	    file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
-	    print('file_ids')
-	    print(file_ids)
+        output_path = os.path.join(labeltype_path, direction)
+        img_folder = os.path.join(output_path, "images")
+        label_folder = os.path.join(output_path, "labels")
+
+        mkdir(output_path)
+        mkdir(img_folder)
+        mkdir(label_folder)
+
+        file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
+        print('file_ids')
+        print(file_ids)
 	    	
 	    for file_id in file_ids: # process each set of files
 			
