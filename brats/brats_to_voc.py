@@ -2,6 +2,7 @@ import nibabel
 import os
 import sys
 import numpy as np
+from PIL import Image
 
 """
 	purpose: convert brats dataset into coco format
@@ -127,8 +128,8 @@ for labeltype in labels:
         mkdir(label_folder)
 
         file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
-        print('file_ids')
-        print(file_ids)
+        # print('file_ids')
+        # print(file_ids)
 	    	
         for file_id in file_ids: # process each set of files
 
@@ -173,11 +174,10 @@ for labeltype in labels:
             for i in range(data.shape[0]):
                 img = file_id_data[:,i:i+1,:,:]
                 seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                print('img.shape')
-                print(img.shape)
-                Image.write(img)
-                Image.write(seg)
-                
+                # print('img.shape') (4, 1, 240, 155)
+                # print(img.shape)
+                img.save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                seg.save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
 
 		
 """end
