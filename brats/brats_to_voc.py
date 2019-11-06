@@ -85,7 +85,7 @@ def create_data(input_path, seg_path,  output_img, output_label, output_mask, su
     end
 '''
 def mkdir(path):
-	if(not path.exists(path)):
+	if(not os.path.exists(path)):
 		os.mkdir(path)
 
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
