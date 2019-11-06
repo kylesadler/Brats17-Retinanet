@@ -24,16 +24,16 @@ move_files(){
 
 cd $1
 
-unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
+# unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
-rm survival_data.csv
-mkdir flair/ t1/ t1ce/ t2/ seg/
+# rm survival_data.csv
+# mkdir flair/ t1/ t1ce/ t2/ seg/
 
-move_files "HGG"
-move_files "LGG"
+# move_files "HGG"
+# move_files "LGG"
 
-rm -r HGG LGG
-gunzip -vr * &
+# rm -r HGG LGG
+# gunzip -vr * &
 #echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
 #echo $2
 
