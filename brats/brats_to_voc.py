@@ -146,12 +146,15 @@ for labeltype in labels:
 
             # transpose so axis 0 is sliced
             if(direction == "axial"):
+                pass
                 # np.transpose(data, [2,1,0])
                 # np.transpose(seg_data, [2,1,0])
             elif(direction == "corneal"):
+                pass
                 # np.transpose(data, [2,1,0])
                 # np.transpose(seg_data, [2,1,0])
             elif(direction == "sagitarial"):
+                pass
                 # np.transpose(data, [2,1,0])
                 # np.transpose(seg_data, [2,1,0])
             else:
