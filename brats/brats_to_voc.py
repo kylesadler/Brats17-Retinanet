@@ -206,7 +206,7 @@ for labeltype in labels:
                     seg = seg_data[i,:,:]
                     
                     assert(img.shape == (960, 240))
-					assert(seg.shape == (960, 240))
+                    assert(seg.shape == (960, 240))
 					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
@@ -223,7 +223,7 @@ for labeltype in labels:
                     seg = seg_data[:,i,:]
                     
                     assert(img.shape == (960, 240))
-					assert(seg.shape == (960, 240))
+                    assert(seg.shape == (960, 240))
 					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
