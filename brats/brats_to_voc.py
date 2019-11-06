@@ -181,7 +181,7 @@ for labeltype in labels:
                 file_id_data = np.concatenate(file_id_data, axis=0)
                 seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 assert(file_id_data.shape == (960, 240, 155))
-                assert(seg.shape == (960, 240, 155))
+                assert(seg_data.shape == (960, 240, 155))
                 
                 # slice images and save
                 for i in range(file_id_data.shape[2]):
@@ -189,7 +189,7 @@ for labeltype in labels:
                     seg = seg_data[:,:,i]
                     
                     assert(img.shape == (960, 240))
-					assert(seg.shape == (960, 240))
+                    assert(seg.shape == (960, 240))
 					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
@@ -198,7 +198,7 @@ for labeltype in labels:
                 file_id_data = np.concatenate(file_id_data, axis=1)
                 seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=1)
                 assert(file_id_data.shape == (960, 240, 155))
-                assert(seg.shape == (960, 240, 155))
+                assert(seg_data.shape == (960, 240, 155))
                 
                 # slice images and save
                 for i in range(file_id_data.shape[0]):
@@ -215,7 +215,7 @@ for labeltype in labels:
                 file_id_data = np.concatenate(file_id_data, axis=0)
                 seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 assert(file_id_data.shape == (960, 240, 155))
-                assert(seg.shape == (960, 240, 155))
+                assert(seg_data.shape == (960, 240, 155))
                 
                 # slice images and save
                 for i in range(file_id_data.shape[1]):
