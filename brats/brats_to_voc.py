@@ -172,9 +172,9 @@ for labeltype in labels:
 
             # slice images and save
             for i in range(data.shape[0]):
-                print('file_id_data.shape') (4, 240, 240, 155)
+                print('file_id_data.shape') #(4, 240, 240, 155)
                 print(file_id_data.shape)
-                print('file_id_data[:,i:i+1,:,:].shape') (4, 1, 240, 155)
+                print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
                 print(file_id_data[:,i:i+1,:,:].shape) 
                 img = file_id_data[:,i:i+1,:,:]
                 seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
