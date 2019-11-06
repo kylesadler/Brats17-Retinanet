@@ -173,14 +173,14 @@ def main():
 
 def slice_and_save(data, slice_axis, i, folder, file_id):
 
-    img = get_slice(data, slice_axis, i)
+    img = get_slice(data, slice_axis, i).astype(np.int8)
 
     min = np.min(img)
     img = (img - min) / (np.max(img) - min) * 255
 
-    check(img)
+    check(img, slice_axis)
 
-    Image.fromarray(img).save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
+    Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
 
 
 '''
