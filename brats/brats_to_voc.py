@@ -19,10 +19,10 @@ from PIL import Image
 		target is label of the brain stacked 4 times
 		
 		repeat for each view (axial, sagittal, corneal)
-		repeat for each type: whole_tumor, tumor_core, active_tumor
+		repeat for each type: whole_tumor, tumor_core, enhancing_tumor
 		
 		output_dir
-			|-> active_tumor
+			|-> enhancing_tumor
 			|-> tumor_core
 			|-> whole_tumor
 				|-> corneal
@@ -36,7 +36,7 @@ from PIL import Image
 						...
 		
 	labels: 
-	1,2,3,4 = active_tumor,”
+	1,2,3,4 = enhancing_tumor,”
 “non-enhancing (solid) core,” “necrotic (or fluid-filled) core,”
 and “non-enhancing core
 	
@@ -96,7 +96,23 @@ def get_file_id(file):
 
 
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
-output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created '''
+output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
+
+The WT describes the union of the ET, NET and
+ED, whereas the TC describes the union of the ET and NET.
+'''
+# whole_tumor is 1,2,4
+# tumor_core is 1,4
+# enhancing_tumor is 4
+
+
+
+"""
+
+The sub-regions considered for evaluation are: 1) the "enhancing tumor" (ET), 2) the "tumor core" (TC), and 3) the "whole tumor" (WT) [see figure below]. The ET is described by areas that show hyper-intensity in T1Gd when compared to T1, but also when compared to “healthy” white matter in T1Gd. The TC describes the bulk of the tumor, which is what is typically resected. The TC entails the ET, as well as the necrotic (fluid-filled) and the non-enhancing (solid) parts of the tumor. The appearance of the necrotic (NCR) and the non-enhancing (NET) tumor core is typically hypo-intense in T1-Gd when compared to T1. The WT describes the complete extent of the disease, as it entails the TC and the peritumoral edema (ED), which is typically depicted by hyper-intense signal in FLAIR.
+The labels in the provided data are: 1 for NCR & NET, 2 for ED, 4 for ET, and 0 for everything else.
+
+"""
 
 # TODO check direction and labels
 
@@ -105,14 +121,11 @@ input_dir = sys.argv[1] # where brats is located
 output_dir = sys.argv[2] # where brats VOC is created
 mkdir(output_dir)
 
-seg_file_end = '_seg.nii'
-
-directions = ["axial", "corneal", "sagittal"]
+directions = ["axial", "coronal", "sagittal"]
 modes = ["flair", "t1", "t2", "t1ce"]
 folders = ["images", "labels", "masks"]
 
-
-labels = {"whole_tumor":[1,2,3,4], "tumor_core":1, "active_tumor":3, "none":4}
+labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4} #, "none":4}
 
 for labeltype in labels:
     label = labels[labeltype]
@@ -134,8 +147,9 @@ for labeltype in labels:
 	    	
         for file_id in file_ids: # process each set of files
 
+			# seg data should be 1: healthy brain, 2: labeltype, 0:background
             seg_data_temp = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
-            seg_data = seg_data_temp > 0 + np.zeros(seg_data_temp.shape)
+            seg_data = seg_data_temp > 0 # + np.zeros(seg_data_temp.shape)
 
             for l in label:
                 seg_data += seg_data_temp == l 
@@ -154,24 +168,35 @@ for labeltype in labels:
                 file_id_data.append(data)
                 
 
+
+
+			"""
+			
+			slicing z is axial
+			slicing y is sagittal
+			slicing x is coronal
+			
+			"""
             # transpose so axis 0 is sliced
             if(direction == "axial"):
                 
                 file_id_data = np.concatenate(file_id_data, axis=0)
                 # slice images and save
-                for i in range(data.shape[0]):
-                    print('file_id_data.shape') #(4, 240, 240, 155)
+                for i in range(data.shape[2]):
+                    print('file_id_data.shape')
                     print(file_id_data.shape)
-                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                    print(file_id_data[:,i:i+1,:,:].shape) 
-                    img = file_id_data[:,i:i+1,:,:]
+                    
+                    img = file_id_data[:,:,:,i:i+1]
+                    print('img.shape')
+                    print(img.shape) 
+                    
                     seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                     # print('img.shape') (4, 1, 240, 155)
                     # print(img.shape)
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
-            elif(direction == "corneal"):
+            elif(direction == "coronal"):
                 
                 file_id_data = np.concatenate(file_id_data, axis=1)
                 np.transpose(file_id_data, [2,1,0])
