@@ -176,12 +176,12 @@ for labeltype in labels:
                 print(file_id_data.shape)
                 print('file_id_data[:,i:i+1,:,:].shape')
                 print(file_id_data[:,i:i+1,:,:].shape)
-                img = Image.fromarray(file_id_data[:,i:i+1,:,:])
-                seg = Image.fromarray(np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0))
+                img = file_id_data[:,i:i+1,:,:]
+                seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 # print('img.shape') (4, 1, 240, 155)
                 # print(img.shape)
-                img.save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                seg.save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+                Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
+                Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
 
 		
 """end
