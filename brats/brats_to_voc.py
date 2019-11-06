@@ -174,8 +174,8 @@ for labeltype in labels:
             assert(raw_seg_data.shape == (240, 240, 155))
             seg_data = raw_seg_data > 0 
             # + np.zeros(raw_seg_data.shape)
-			
-			for l in label:
+            
+            for l in label:
 				seg_data += raw_seg_data == l 
 			
 			assert(seg_data.shape == (240, 240, 155)) 
