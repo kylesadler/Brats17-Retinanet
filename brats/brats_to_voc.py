@@ -182,7 +182,6 @@ for labeltype in labels:
 			
 			seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
 
-            
 			
 			# load all mri scans from patient
             file_data = [] # "flair", "t1", "t2", "t1ce"
