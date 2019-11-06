@@ -180,14 +180,21 @@ for labeltype in labels:
             if(direction == "axial"):
                 
                 file_id_data = np.concatenate(file_id_data, axis=0)
+                assert(file_id_data.shape == (960, 240, 155))
+                
                 # slice images and save
                 for i in range(data.shape[2]):
-                    print('file_id_data.shape')
-                    print(file_id_data.shape)
-                    
+                    	# print('file_id_data.shape')
+                    # print(file_id_data.shape)
                     img = file_id_data[:,:,i:i+1]
-                    print('img.shape')
-                    print(img.shape) 
+                    assert(img.shape == (960, 240, 1))
+					
+					# convert into three chanels
+                    img = np.concatenate((img,img,img), axis=-1)
+                    assert(img.shape == (960, 240, 3))
+					
+                    # print('img.shape')
+                    # print(img.shape) 
                     
                     seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                     # print('img.shape') (4, 1, 240, 155)
@@ -198,14 +205,14 @@ for labeltype in labels:
             elif(direction == "coronal"):
                 
                 file_id_data = np.concatenate(file_id_data, axis=1)
-                np.transpose(file_id_data, [2,1,0])
+                # np.transpose(file_id_data, [2,1,0])
                 # slice images and save
                 for i in range(data.shape[0]):
                     print('file_id_data.shape') #(4, 240, 240, 155)
                     print(file_id_data.shape)
                     print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                    print(file_id_data[:,i:i+1,:,:].shape) 
-                    img = file_id_data[:,i:i+1,:,:]
+                    print(file_id_data[i:i+1,:,:].shape) 
+                    img = file_id_data[i:i+1,:,:]
                     seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                     # print('img.shape') (4, 1, 240, 155)
                     # print(img.shape)
@@ -216,12 +223,13 @@ for labeltype in labels:
                 
                 file_id_data = np.concatenate(file_id_data, axis=0)
                 # slice images and save
-                for i in range(data.shape[0]):
+                for i in range(data.shape[1]):
                     print('file_id_data.shape') #(4, 240, 240, 155)
                     print(file_id_data.shape)
+                    
                     print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                    print(file_id_data[:,i:i+1,:,:].shape) 
-                    img = file_id_data[:,i:i+1,:,:]
+                    print(file_id_data[:,i:i+1,:].shape) 
+                    img = file_id_data[:,i:i+1,:]
                     seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                     # print('img.shape') (4, 1, 240, 155)
                     # print(img.shape)
