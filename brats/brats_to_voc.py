@@ -122,53 +122,52 @@ for labeltype in labels:
         print('file_ids')
         print(file_ids)
 	    	
-	    for file_id in file_ids: # process each set of files
-			
-			
-			seg_data_temp = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
-			seg_data = seg_data_temp > 0 + np.zeros(seg_data_temp.shape)
-			
-			for l in label:
-				seg_data += seg_data_temp = l 
-			print('seg_data.shape')
-			print(seg_data.shape)
-			
-			file_id_data = [] # "flair", "t1", "t2", "t1ce"
-			for mode in modes:
-				
-				# depth, width, height
-				data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-				print('data.shape')
-				print(data.shape)
-				assert(seg_data.shape == data.shape)
-				
-				file_id_data.append(data)
-				
-			
-			# transpose so axis 0 is sliced
-			if(direction == "axial"):
-				# np.transpose(data, [2,1,0])
-				# np.transpose(seg_data, [2,1,0])
-			elif(direction == "corneal"):
-				# np.transpose(data, [2,1,0])
-				# np.transpose(seg_data, [2,1,0])
-			elif(direction == "sagitarial"):
-				# np.transpose(data, [2,1,0])
-				# np.transpose(seg_data, [2,1,0])
-			else:
-				raise
-			
-			# slice images and save
-			for i in range(data.shape[0]):
-				img = np.concatenate(file_id_data[:][i:i+1,:,:], axis=0)
-				seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-				print('img.shape')
-				print(img.shape)
-				Image.write(img)
-				Image.write(seg)
-				
-		
-		
+        for file_id in file_ids: # process each set of files
+
+            seg_data_temp = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
+            seg_data = seg_data_temp > 0 + np.zeros(seg_data_temp.shape)
+
+            for l in label:
+                seg_data += seg_data_temp = l 
+            print('seg_data.shape')
+            print(seg_data.shape)
+
+            file_id_data = [] # "flair", "t1", "t2", "t1ce"
+            for mode in modes:
+                
+                # depth, width, height
+                data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
+                print('data.shape')
+                print(data.shape)
+                assert(seg_data.shape == data.shape)
+                
+                file_id_data.append(data)
+                
+
+            # transpose so axis 0 is sliced
+            if(direction == "axial"):
+                # np.transpose(data, [2,1,0])
+                # np.transpose(seg_data, [2,1,0])
+            elif(direction == "corneal"):
+                # np.transpose(data, [2,1,0])
+                # np.transpose(seg_data, [2,1,0])
+            elif(direction == "sagitarial"):
+                # np.transpose(data, [2,1,0])
+                # np.transpose(seg_data, [2,1,0])
+            else:
+                raise
+
+            # slice images and save
+            for i in range(data.shape[0]):
+                img = np.concatenate(file_id_data[:][i:i+1,:,:], axis=0)
+                seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+                print('img.shape')
+                print(img.shape)
+                Image.write(img)
+                Image.write(seg)
+                
+
+
 def get_file_id(file):
 	return "_".join(file.split("_")[:-1])
 
