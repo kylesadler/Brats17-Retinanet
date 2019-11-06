@@ -172,6 +172,10 @@ for labeltype in labels:
 
             # slice images and save
             for i in range(data.shape[0]):
+                print('file_id_data.shape')
+                print(file_id_data.shape)
+                print('file_id_data[:,i:i+1,:,:].shape')
+                print(file_id_data[:,i:i+1,:,:].shape)
                 img = Image.fromarray(file_id_data[:,i:i+1,:,:])
                 seg = Image.fromarray(np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0))
                 # print('img.shape') (4, 1, 240, 155)
