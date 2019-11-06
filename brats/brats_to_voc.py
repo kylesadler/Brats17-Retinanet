@@ -95,6 +95,7 @@ output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created '''
 input_dir = sys.argv[1] # where brats is located
 
 output_dir = sys.argv[2] # where brats VOC is created
+mkdir(output_dir)
 
 seg_file_end = '_seg.nii'
 
