@@ -41,51 +41,7 @@ from PIL import Image
 and “non-enhancing core
 	
 """
-'''
-def create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label):
-    input_list = dir([input_path, '*.nii']);
-    for i = 1 : length(input_list)   % for each file in input_dir   
-        input_name = input_list(i).name;
-        seg_name = strrep(input_name, subsec0, seg_file_end);
-        if isfile([input_path, input_name]) && isfile([seg_path, seg_name])
-            info  = nii_read_header([input_path, input_name]);
-            V = nii_read_volume(info); % mode
-            info  = nii_read_header([seg_path, seg_name]);
-            V1 = nii_read_volume(info); % seg
-            for j = 1 : size(V, 3)
-                I = V(:,:,j);
-                I = double(I);
-                dif = max(I(:)) - min(I(:));
-                if dif == 0 
-                    continue;
-                else
-                	I = (I - min(I(:)))/dif;
-                    I1 = V1(:,:,j);
-                    I1 = double(I1);
-                    label = zeros(size(I1)); % non brain part
-                    label(I>0)=1; % brain
-                    for k = 1 : size(flair_label,2)
-                        label(I1==flair_label(k)) = 2; % tumor
-                    end
-                
-                    label = imfill(label, 'holes');
-                    label = double(label);
-                end
-                I = im2uint8(I);
-                final_im =cat(3, I, I, I);
-                imwrite(final_im, [output_img, strrep(input_name, subsec0, ['_', num2str(j), '.png'])]);
-                final_label = uint8(label);
-                imwrite(final_label, [output_label, strrep(input_name, subsec0, ['_', num2str(j), '.png'])]);
-                
-                
-            end
-        end
 
-     
-
-
-    end
-'''
 def mkdir(path):
 	if(not os.path.exists(path)):
 		os.mkdir(path)
@@ -94,13 +50,13 @@ def mkdir(path):
 def get_file_id(file):
 	return "_".join(file.split("_")[:-1])
 
-def check(nparray):
+def check(nparray, slice_axis):
 	if(slice_axis == 0):
 		assert(nparray.shape == (240, 620))
 	elif(slice_axis == 1):
 		assert(nparray.shape == (960, 155))
 	elif(slice_axis == 2):
-		assert(nparray.shape == (960, 240))
+		assert(nparray.shape == (240, 960))
 	else:
 		raise
 	
@@ -136,80 +92,145 @@ The labels in the provided data are: 1 for NCR & NET, 2 for ED, 4 for ET, and 0 
 """
 
 # TODO check direction and labels
+def main():
+    input_dir = sys.argv[1] # where brats is located
 
-input_dir = sys.argv[1] # where brats is located
+    output_dir = sys.argv[2] # where brats VOC is created
+    mkdir(output_dir)
 
-output_dir = sys.argv[2] # where brats VOC is created
-mkdir(output_dir)
+    directions = ["axial", "coronal", "sagittal"]
+    modes = ["flair", "t1", "t2", "t1ce"]
+    folders = ["images", "labels", "masks"]
 
-directions = ["axial", "coronal", "sagittal"]
-modes = ["flair", "t1", "t2", "t1ce"]
-folders = ["images", "labels", "masks"]
+    # things to set to 2 (target region)
+    labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4}
 
-# things to set to 2 (target region)
-labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4}
+    slice_axes = {"coronal":0, "sagittal":1, "axial":2}
 
-slice_axes = {"coronal":0, "sagittal":1, "axial":2}
+    for labeltype in labels:
+        label = labels[labeltype]
+        labeltype_path = os.path.join(output_dir, labeltype)
+        mkdir(labeltype_path)
 
-for labeltype in labels:
-    label = labels[labeltype]
-    labeltype_path = os.path.join(output_dir, labeltype)
-    mkdir(labeltype_path)
+        for direction in directions:
+            output_path = os.path.join(labeltype_path, direction)
+            img_folder = os.path.join(output_path, "images")
+            label_folder = os.path.join(output_path, "labels")
 
-    for direction in directions:
-        output_path = os.path.join(labeltype_path, direction)
-        img_folder = os.path.join(output_path, "images")
-        label_folder = os.path.join(output_path, "labels")
+            mkdir(output_path)
+            mkdir(img_folder)
+            mkdir(label_folder)
 
-        mkdir(output_path)
-        mkdir(img_folder)
-        mkdir(label_folder)
+            file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
+            slice_axis = slice_axes[direction]
 
-        file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
-        slice_axis = slice_axes[direction]
-        
-        # print('file_ids')
-        # print(file_ids)
-	    	
-        for file_id in file_ids: # process each set of files
+            # print('file_ids')
+            # print(file_ids)
 
-			# seg data should be 1: healthy brain, 2: labeltype, 0:background
-            # prepare segmentation data label
-            raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
+            for file_id in file_ids: # process each set of files
 
-            assert(raw_seg_data.shape == (240, 240, 155))
-            seg_data = raw_seg_data > 0
-            # + np.zeros(raw_seg_data.shape)
+                # load all mri scans from patient
+                file_data = [] # "flair", "t1", "t2", "t1ce"
+                seg_data = []
+                raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id + "_seg.nii")).get_data()
+                assert (raw_seg_data.shape == (240, 240, 155))
 
-            for l in label:
-            	seg_data += raw_seg_data == l
+                for mode in modes:
+                    data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
+                    assert(data.shape == (240, 240, 155))
 
-            seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
 
-            # load all mri scans from patient
-            file_data = [] # "flair", "t1", "t2", "t1ce"
-            for mode in modes:
-                data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                assert(data.shape == (240, 240, 155))
-                file_data.append(data)
+                    # seg data should be 1: healthy brain, 2: labeltype, 0:background
+                    # prepare segmentation data label
 
-            file_data = np.concatenate(file_data, axis=slice_axis-1)
-            
-            assert(file_data.shape == seg_data.shape)
+                    segmentation = (data > 0).astype(int) # healthy brain tissue = 1
 
-            # slice images and save
-            for i in range(file_data.shape[slice_axis]):
-                img = get_slice(file_data, slice_axis, i)
-                seg = get_slice(seg_data, slice_axis, i)
+                    for l in label: # region of interest = 2
+                        segmentation += (raw_seg_data == l).astype(int)
 
-                check(img)
-                check(seg)
 
-                Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
-                Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
+                    print(np.max(segmentation))
+                    print(np.min(segmentation))
+                    # assert(np.max(segmentation) == 2)
+                    # assert(np.min(segmentation) == 0)
+
+                    seg_data.append(segmentation)
+                    file_data.append(data)
+
+                file_data = np.concatenate(file_data, axis=slice_axis-1)
+                seg_data = np.concatenate(seg_data, axis=slice_axis-1)
+
+
+                # print(file_data.shape)
+                # print(seg_data.shape)
+                assert(file_data.shape == seg_data.shape)
+
+                # slice images, normalize, and save
+                for i in range(file_data.shape[slice_axis]):
+                    slice_and_save(file_data, slice_axis, i, img_folder, file_id) #
+                    slice_and_save(seg_data, slice_axis, i, label_folder, file_id)
+
+
+def slice_and_save(data, slice_axis, i, folder, file_id):
+
+    img = get_slice(data, slice_axis, i)
+
+    min = np.min(img)
+    img = (img - min) / (np.max(img) - min) * 255
+
+    check(img)
+
+    Image.fromarray(img).save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
+
+
+'''
+def create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label):
+    input_list = dir([input_path, '*.nii']);
+    for i = 1 : length(input_list)   % for each file in input_dir   
+        input_name = input_list(i).name;
+        seg_name = strrep(input_name, subsec0, seg_file_end);
+        if isfile([input_path, input_name]) && isfile([seg_path, seg_name])
+            info  = nii_read_header([input_path, input_name]);
+            V = nii_read_volume(info); % mode
+            info  = nii_read_header([seg_path, seg_name]);
+            V1 = nii_read_volume(info); % seg
+            for j = 1 : size(V, 3)
+                I = V(:,:,j);
+                I = double(I);
+                dif = max(I(:)) - min(I(:));
+                if dif == 0 
+                    continue;
+                else
+                	I = (I - min(I(:)))/dif;
+                    I1 = V1(:,:,j);
+                    I1 = double(I1);
+                    label = zeros(size(I1)); % non brain part
+                    label(I>0)=1; % brain
+                    for k = 1 : size(flair_label,2)
+                        label(I1==flair_label(k)) = 2; % tumor
+                    end
+
+                    label = imfill(label, 'holes');
+                    label = double(label);
+                end
+                I = im2uint8(I);
+                final_im =cat(3, I, I, I);
+                imwrite(final_im, [output_img, strrep(input_name, subsec0, ['_', num2str(j), '.png'])]);
+                final_label = uint8(label);
+                imwrite(final_label, [output_label, strrep(input_name, subsec0, ['_', num2str(j), '.png'])]);
+
+
+            end
+        end
+
+
+
+
+    end
+'''
+
 
 """end
-
 % flair_label = [1, 2, 3, 4]; %whole tumor
 % t1_label= 1; % tumor core?
 % t2_label= 3;
@@ -218,3 +239,6 @@ for labeltype in labels:
 Le 645
 
 """
+
+if __name__ == '__main__':
+    main()
