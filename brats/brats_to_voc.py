@@ -38,7 +38,7 @@ import os
 and “non-enhancing core
 	
 """
-
+'''
 def create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label):
     input_list = dir([input_path, '*.nii']);
     for i = 1 : length(input_list)   % for each file in input_dir   
@@ -82,7 +82,7 @@ def create_data(input_path, seg_path,  output_img, output_label, output_mask, su
 
 
     end
-
+'''
 def mkdir(path):
 	if(not path.exists(path)):
 		os.mkdir(path)
