@@ -96,8 +96,8 @@ def get_file_id(file):
 
 def check(nparray):
 	assert(nparray.shape == (960, 240))
-    assert(np.max(nparray) == 255)
-    assert(np.min(nparray) == 0)
+	assert(np.max(nparray) == 255)
+	assert(np.min(nparray) == 0)
     
 def get_slice(ndarray, slice_axis, i):
 	if(slice_axis == 0):
