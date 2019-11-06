@@ -88,6 +88,11 @@ def mkdir(path):
 	if(not os.path.exists(path)):
 		os.mkdir(path)
 
+
+def get_file_id(file):
+	return "_".join(file.split("_")[:-1])
+
+
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
 output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created '''
 
@@ -171,10 +176,6 @@ for labeltype in labels:
                 Image.write(img)
                 Image.write(seg)
                 
-
-
-def get_file_id(file):
-	return "_".join(file.split("_")[:-1])
 
 		
 """end
