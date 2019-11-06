@@ -168,12 +168,13 @@ for labeltype in labels:
         for file_id in file_ids: # process each set of files
 
 			# seg data should be 1: healthy brain, 2: labeltype, 0:background
-            
             # prepare segmentation data label
             raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
             
             assert(raw_seg_data.shape == (240, 240, 155))
-			seg_data = raw_seg_data > 0 # + np.zeros(raw_seg_data.shape)
+            seg_data = raw_seg_data > 0 
+            # + np.zeros(raw_seg_data.shape)
+			
 			for l in label:
 				seg_data += raw_seg_data == l 
 			
