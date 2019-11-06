@@ -108,8 +108,6 @@ def get_slice(ndarray, slice_axis, i):
 		return ndarray[:,:,i]
 	else:
 		raise
-		
-
 '''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
 output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
 
@@ -170,46 +168,48 @@ for labeltype in labels:
 			# seg data should be 1: healthy brain, 2: labeltype, 0:background
             # prepare segmentation data label
             raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id+"_seg.nii")).get_data()
-            
-            assert(raw_seg_data.shape == (240, 240, 155))
-            seg_data = raw_seg_data > 0 
-            # + np.zeros(raw_seg_data.shape)
-            
-            for l in label:
-            	seg_data += raw_seg_data == l 
-			
-			assert(seg_data.shape == (240, 240, 155)) 
-			
-			seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
 
-			
-			# load all mri scans from patient
+            assert(raw_seg_data.shape == (240, 240, 155))
+            seg_data = raw_seg_data > 0
+            # + np.zeros(raw_seg_data.shape)
+
+            for l in label:
+            	seg_data += raw_seg_data == l
+
+            seg_data = np.concatenate([seg_data for i in range(4)], axis=slice_axis)
+
+            # load all mri scans from patient
             file_data = [] # "flair", "t1", "t2", "t1ce"
             for mode in modes:
-                
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                assert(data.shape == (240, 240, 155)) 
+                assert(data.shape == (240, 240, 155))
                 file_data.append(data)
 
-            
-			file_data = np.concatenate(file_data, axis=slice_axis)
-            
-            
-            assert(file_data.shape == (960, 240, 155))
-            assert(seg_data.shape == (960, 240, 155))
-            
+            file_data = np.concatenate(file_data, axis=slice_axis)
+            if(slice_axis == 0):
+                correct_shape = (960, 240, 155)
+            elif(slice_axis == 1):
+                correct_shape = (240, 960, 155)
+            elif(slice_axis == 2):
+                correct_shape = (240, 240, 620)
+
+            print(file_data.shape)
+            print(seg_data.shape)
+            print(correct_shape)
+            assert(file_data.shape == correct_shape)
+            assert(seg_data.shape == correct_shape)
+
             # slice images and save
             for i in range(file_data.shape[slice_axis]):
                 img = get_slice(file_data, slice_axis, i)
                 seg = get_slice(seg_data, slice_axis, i)
-                
+
                 check(img)
                 check(seg)
-                
+
                 Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                 Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
-            
-		
+
 """end
 
 % flair_label = [1, 2, 3, 4]; %whole tumor
