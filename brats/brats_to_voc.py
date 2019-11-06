@@ -140,19 +140,14 @@ def main():
                     assert(data.shape == (240, 240, 155))
 
 
-                    # seg data should be 1: healthy brain, 2: labeltype, 0:background
-                    # prepare segmentation data label
-
-                    segmentation = (data > 0).astype(int) # healthy brain tissue = 1
+                    segmentation = (data > 0).astype(int) # healthy brain tissue = 1, background = 0
 
                     for l in label: # region of interest = 2
                         segmentation += (raw_seg_data == l).astype(int)
 
 
-                    print(np.max(segmentation))
-                    print(np.min(segmentation))
-                    # assert(np.max(segmentation) == 2)
-                    # assert(np.min(segmentation) == 0)
+                    assert(np.max(segmentation) == 2)
+                    assert(np.min(segmentation) == 0)
 
                     seg_data.append(segmentation)
                     file_data.append(data)
@@ -160,9 +155,6 @@ def main():
                 file_data = np.concatenate(file_data, axis=slice_axis-1)
                 seg_data = np.concatenate(seg_data, axis=slice_axis-1)
 
-
-                # print(file_data.shape)
-                # print(seg_data.shape)
                 assert(file_data.shape == seg_data.shape)
 
                 # slice images, normalize, and save
@@ -173,10 +165,14 @@ def main():
 
 def slice_and_save(data, slice_axis, i, folder, file_id):
 
-    img = get_slice(data, slice_axis, i).astype(np.int8)
+    img = get_slice(data, slice_axis, i)
 
+    if(np.max(img) - np.min(img) == 0):
+        return
+
+    # normalize values
     min = np.min(img)
-    img = (img - min) / (np.max(img) - min) * 255
+    img = ((img - min) / (np.max(img) - min) * 255).astype(np.uint8)
 
     check(img, slice_axis)
 
