@@ -186,12 +186,12 @@ for labeltype in labels:
                 for i in range(data.shape[2]):
                     	# print('file_id_data.shape')
                     # print(file_id_data.shape)
-                    img = file_id_data[:,:,i:i+1]
-                    assert(img.shape == (960, 240, 1))
+                    img = file_id_data[:,:,i]
+                    assert(img.shape == (960, 240))
 					
 					# convert into three chanels
-                    img = np.concatenate((img,img,img), axis=-1)
-                    assert(img.shape == (960, 240, 3))
+                    #img = np.concatenate((img,img,img), axis=-1)
+                    #assert(img.shape == (960, 240, 3))
 					
                     # print('img.shape')
                     # print(img.shape) 
