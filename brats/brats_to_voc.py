@@ -137,19 +137,20 @@ for labeltype in labels:
 
             for l in label:
                 seg_data += seg_data_temp == l 
-            print('seg_data.shape')
-            print(seg_data.shape)
+            # print('seg_data.shape') (240, 240, 155)
+            # print(seg_data.shape)
 
             file_id_data = [] # "flair", "t1", "t2", "t1ce"
             for mode in modes:
                 
                 # depth, width, height
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                print('data.shape')
-                print(data.shape)
+                # print('data.shape') (240, 240, 155)
+                # print(data.shape)
                 assert(seg_data.shape == data.shape)
                 
                 file_id_data.append(data)
+            file_id_data = np.asarray(file_id_data)
                 
 
             # transpose so axis 0 is sliced
@@ -170,7 +171,7 @@ for labeltype in labels:
 
             # slice images and save
             for i in range(data.shape[0]):
-                img = np.concatenate(file_id_data[:][i:i+1,:,:], axis=0)
+                img = file_id_data[:,i:i+1,:,:]
                 seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 print('img.shape')
                 print(img.shape)
