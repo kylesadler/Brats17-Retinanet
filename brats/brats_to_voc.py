@@ -178,61 +178,53 @@ for labeltype in labels:
             """
             # transpose so axis 0 is sliced
             if(direction == "axial"):
-                
                 file_id_data = np.concatenate(file_id_data, axis=0)
+                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
                 assert(file_id_data.shape == (960, 240, 155))
+                assert(seg.shape == (960, 240, 155))
                 
                 # slice images and save
-                for i in range(data.shape[2]):
-                    	# print('file_id_data.shape')
-                    # print(file_id_data.shape)
+                for i in range(file_id_data.shape[2]):
                     img = file_id_data[:,:,i]
-                    assert(img.shape == (960, 240))
-					
-					# convert into three chanels
-                    #img = np.concatenate((img,img,img), axis=-1)
-                    #assert(img.shape == (960, 240, 3))
-					
-                    # print('img.shape')
-                    # print(img.shape) 
+                    seg = seg_data[:,:,i]
                     
-                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                    # print('img.shape') (4, 1, 240, 155)
-                    # print(img.shape)
+                    assert(img.shape == (960, 240))
+					assert(seg.shape == (960, 240))
+					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
             elif(direction == "coronal"):
-                
                 file_id_data = np.concatenate(file_id_data, axis=1)
-                # np.transpose(file_id_data, [2,1,0])
+                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=1)
+                assert(file_id_data.shape == (960, 240, 155))
+                assert(seg.shape == (960, 240, 155))
+                
                 # slice images and save
-                for i in range(data.shape[0]):
-                    print('file_id_data.shape') #(4, 240, 240, 155)
-                    print(file_id_data.shape)
-                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                    print(file_id_data[i:i+1,:,:].shape) 
-                    img = file_id_data[i:i+1,:,:]
-                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                    # print('img.shape') (4, 1, 240, 155)
-                    # print(img.shape)
+                for i in range(file_id_data.shape[0]):
+                    img = file_id_data[i,:,:]
+                    seg = seg_data[i,:,:]
+                    
+                    assert(img.shape == (960, 240))
+					assert(seg.shape == (960, 240))
+					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
             elif(direction == "sagittal"):
-                
                 file_id_data = np.concatenate(file_id_data, axis=0)
+                seg_data = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
+                assert(file_id_data.shape == (960, 240, 155))
+                assert(seg.shape == (960, 240, 155))
+                
                 # slice images and save
-                for i in range(data.shape[1]):
-                    print('file_id_data.shape') #(4, 240, 240, 155)
-                    print(file_id_data.shape)
+                for i in range(file_id_data.shape[1]):
+                    img = file_id_data[:,i,:]
+                    seg = seg_data[:,i,:]
                     
-                    print('file_id_data[:,i:i+1,:,:].shape') #(4, 1, 240, 155)
-                    print(file_id_data[:,i:i+1,:].shape) 
-                    img = file_id_data[:,i:i+1,:]
-                    seg = np.concatenate((seg_data,seg_data,seg_data,seg_data), axis=0)
-                    # print('img.shape') (4, 1, 240, 155)
-                    # print(img.shape)
+                    assert(img.shape == (960, 240))
+					assert(seg.shape == (960, 240))
+					
                     Image.fromarray(img).save(os.path.join(img_folder, file_id+"_"+str(i)+".png"))
                     Image.fromarray(seg).save(os.path.join(label_folder, file_id+"_"+str(i)+".png"))
             
