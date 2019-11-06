@@ -60,9 +60,7 @@ def check(nparray, slice_axis):
 	else:
 		raise
 	
-	assert(np.max(nparray) == 255)
-	assert(np.min(nparray) == 0)
-    
+
 def get_slice(ndarray, slice_axis, i):
 	if(slice_axis == 0):
 		return ndarray[i,:,:]
@@ -137,30 +135,39 @@ def main():
 
                 for mode in modes:
                     data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                    assert(data.shape == (240, 240, 155))
-
+                    file_data.append(data)
 
                     segmentation = (data > 0).astype(int) # healthy brain tissue = 1, background = 0
-
                     for l in label: # region of interest = 2
                         segmentation += (raw_seg_data == l).astype(int)
-
-
-                    assert(np.max(segmentation) == 2)
-                    assert(np.min(segmentation) == 0)
-
                     seg_data.append(segmentation)
-                    file_data.append(data)
+
+                    assert (np.max(segmentation) == 2)
+                    assert (np.min(segmentation) == 0)
+                    assert (data.shape == (240, 240, 155))
 
                 file_data = np.concatenate(file_data, axis=slice_axis-1)
                 seg_data = np.concatenate(seg_data, axis=slice_axis-1)
 
                 assert(file_data.shape == seg_data.shape)
 
+                # normalize values
+                file_data = normalize(file_data)
+                seg_data = normalize(seg_data)
+
+                assert (np.max(seg_data) == 255)
+                assert (np.min(seg_data) == 0)
+                assert (np.max(file_data) == 255)
+                assert (np.min(file_data) == 0)
+
                 # slice images, normalize, and save
                 for i in range(file_data.shape[slice_axis]):
                     slice_and_save(file_data, slice_axis, i, img_folder, file_id) #
                     slice_and_save(seg_data, slice_axis, i, label_folder, file_id)
+
+def normalize(data):
+    min = np.min(data)
+    return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
 
 
 def slice_and_save(data, slice_axis, i, folder, file_id):
@@ -169,10 +176,6 @@ def slice_and_save(data, slice_axis, i, folder, file_id):
 
     if(np.max(img) - np.min(img) == 0):
         return
-
-    # normalize values
-    min = np.min(img)
-    img = ((img - min) / (np.max(img) - min) * 255).astype(np.uint8)
 
     check(img, slice_axis)
 
