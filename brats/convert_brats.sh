@@ -26,20 +26,26 @@ start=$(pwd)
 
 cd $1
 
-# unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
+unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
-# rm survival_data.csv
-# mkdir flair/ t1/ t1ce/ t2/ seg/
+rm survival_data.csv
+mkdir flair/ t1/ t1ce/ t2/ seg/
 
-# move_files "HGG"
-# move_files "LGG"
+move_files "HGG"
+move_files "LGG"
 
-# rm -r HGG LGG
-# gunzip -vr * &
+rm -r HGG LGG
+gunzip -vr * &
 #echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
-#echo $2
 
+if [ -z $2 ]
+then
 brats_voc_dir=$1'brats2017_voc/'
+else
+brats_voc_dir=$2
+fi
+
+
 mkdir $brats_voc_dir
 # matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC('$(pwd)', '$brats_voc_dir'), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
 
