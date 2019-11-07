@@ -196,7 +196,7 @@ def main():
             files = os.listdir(os.path.join(brats_dir, f, g, "images"))
             print(f)
             print(g)
-            print(files)
+            # print(files)
 
 
             # automatically shuffles and splits trainval data 80% / 20% 
