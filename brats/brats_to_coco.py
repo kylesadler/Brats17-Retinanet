@@ -189,10 +189,11 @@ def create_annotations(images):
 def main():
 
     brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
+    brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_voc'
 
     for f in os.listdir(os.path.join(brats_dir)):
         for g in os.listdir(os.path.join(brats_dir, f)):
-            files = os.listdir(os.path.join(brats_dir, f, g))
+            files = os.listdir(os.path.join(brats_dir, f, g, "images"))
             print(f)
             print(g)
             print(files)
