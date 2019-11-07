@@ -25,7 +25,7 @@ move_files(){
 start=$(pwd)
 
 zip_file=$1
-echo $(dirname "${zip_file}")'brats2017_voc/'
+echo $(dirname "${zip_file}")'/brats2017_voc/'
 exit(1)
 cd $(dirname "${zip_file}")
 unzip $(basename "${zip_file}") # MICCAI_BraTS17_Data_Training_for_NLe.zip 
@@ -41,7 +41,7 @@ gunzip -vr * &
 
 if [ -z $2 ]
 then
-brats_voc_dir=$(dirname "${zip_file}")'brats2017_voc/'
+brats_voc_dir=$(dirname "${zip_file}")'/brats2017_voc/'
 else
 brats_voc_dir=$2
 fi
