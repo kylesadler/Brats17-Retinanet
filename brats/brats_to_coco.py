@@ -194,9 +194,9 @@ def main():
     for f in os.listdir(os.path.join(brats_dir)):
         for g in os.listdir(os.path.join(brats_dir, f)):
             files = os.listdir(os.path.join(brats_dir, f, g, "images"))
-            print(f)
-            print(g)
-            # print(files)
+            # print(f)
+            # print(g)
+            # # print(files)
 
 
             # automatically shuffles and splits trainval data 80% / 20% 
