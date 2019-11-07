@@ -101,7 +101,7 @@ def main():
     folders = ["images", "labels", "masks"]
 
     # things to set to 2 (target region)
-    labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":4}
+    labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":[4]}
 
     slice_axes = {"coronal":0, "sagittal":1, "axial":2}
 
@@ -114,6 +114,9 @@ def main():
             output_path = os.path.join(labeltype_path, direction)
             img_folder = os.path.join(output_path, "images")
             label_folder = os.path.join(output_path, "labels")
+
+            if(os.path.exists(output_path)):
+                continue
 
             mkdir(output_path)
             mkdir(img_folder)
@@ -142,7 +145,7 @@ def main():
                         segmentation += (raw_seg_data == l).astype(int)
                     seg_data.append(segmentation)
 
-                    assert (np.max(segmentation) == 2)
+                    assert (np.max(segmentation) == 2 or l ==4)
                     assert (np.min(segmentation) == 0)
                     assert (data.shape == (240, 240, 155))
 
