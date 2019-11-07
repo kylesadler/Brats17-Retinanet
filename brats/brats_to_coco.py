@@ -190,8 +190,8 @@ def main():
 
     brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
 
-    for f in os.listdir(brats_dir):
-        for g in os.listdir(brats_dir, f):
+    for f in os.listdir(os.path.join(brats_dir)):
+        for g in os.listdir(os.path.join(brats_dir, f)):
             files = os.listdir(os.path.join(brats_dir, f, g))
             print(f)
             print(g)
