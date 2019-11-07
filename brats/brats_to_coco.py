@@ -111,7 +111,7 @@ def create_coco_instances(input_dir, output_dir, file_names, dataset_name):
     ensure_exists(dataset_dir)
 
     data = {}
-    data["images"] = create_images(input_dir, output_dir, file_names, dataset_name)
+    data["images"] = create_images(input_dir, file_names, dataset_name)
     print("done creating images")
     data["annotations"] = create_annotations(data["images"])
     data["categories"] = [{"name":"tumor", "id":1}]
@@ -120,7 +120,7 @@ def create_coco_instances(input_dir, output_dir, file_names, dataset_name):
     annotation_file.write(json.dumps(data))
     annotation_file.close
 
-def create_images(brats_dir, file_names, dataset_name):
+def create_images(input_dir, file_names, dataset_name):
     """
     {[
 
@@ -137,7 +137,7 @@ def create_images(brats_dir, file_names, dataset_name):
     images = []
     for name in file_names:
         image = {}
-        img_path = os.path.join(brats_dir,'images', name)
+        img_path = os.path.join(input_dir,'images', name)
         i = Image.open(img_path)
         width, height = i.size
         
