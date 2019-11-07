@@ -3,7 +3,7 @@
 if [ -z $1 ]
 then
 echo "usage:"
-echo "convert_brats.sh /path/to/brats.zip/ /path/to/created/brats_coco/"
+echo "convert_brats.sh /path/to/brats.zip /path/to/created/brats_coco/"
 exit 1
 
 fi
@@ -24,9 +24,9 @@ move_files(){
 
 start=$(pwd)
 
-cd $1
-
-unzip MICCAI_BraTS17_Data_Training_for_NLe.zip 
+zip_file=$1
+cd $(dirname "${zip_file}")
+unzip $(basename "${zip_file}") # MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
 rm survival_data.csv
 mkdir flair/ t1/ t1ce/ t2/ seg/
@@ -36,7 +36,6 @@ move_files "LGG"
 
 rm -r HGG LGG
 gunzip -vr * &
-#echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
 
 if [ -z $2 ]
 then
@@ -45,9 +44,6 @@ else
 brats_voc_dir=$2
 fi
 
-
 mkdir $brats_voc_dir
-# matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC('$(pwd)', '$brats_voc_dir'), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
-
 python $start'/brats_to_voc.py' $(pwd) $brats_voc_dir
 python $start'/brats_to_coco.py' $brats_voc_dir $brats_voc_dir

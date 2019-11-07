@@ -138,26 +138,23 @@ def main():
 
                 for mode in modes:
                     data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
+                    data = normalize(data)
                     file_data.append(data)
 
                     segmentation = (data > 0).astype(int) # healthy brain tissue = 1, background = 0
                     for l in label: # region of interest = 2
                         segmentation += (raw_seg_data == l).astype(int)
-                    seg_data.append(segmentation)
-
                     assert (np.max(segmentation) == 2 or l ==4)
                     assert (np.min(segmentation) == 0)
+                    segmentation = normalize(segmentation)    
+                    seg_data.append(segmentation)
+
                     assert (data.shape == (240, 240, 155))
 
                 file_data = np.concatenate(file_data, axis=slice_axis-1)
                 seg_data = np.concatenate(seg_data, axis=slice_axis-1)
 
                 assert(file_data.shape == seg_data.shape)
-
-                # normalize values
-                file_data = normalize(file_data)
-                seg_data = normalize(seg_data)
-
                 assert (np.max(seg_data) == 255)
                 assert (np.min(seg_data) == 0)
                 assert (np.max(file_data) == 255)
