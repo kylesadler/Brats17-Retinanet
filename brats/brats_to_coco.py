@@ -137,7 +137,7 @@ def create_images(input_dir, file_names, dataset_name):
     images = []
     for name in file_names:
         image = {}
-        img_path = os.path.join(input_dir,'images', name)
+        img_path = os.path.join(input_dir, name)
         i = Image.open(img_path)
         width, height = i.size
         
