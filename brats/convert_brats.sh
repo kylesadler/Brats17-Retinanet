@@ -25,6 +25,8 @@ move_files(){
 start=$(pwd)
 
 zip_file=$1
+echo $(dirname "${zip_file}")'brats2017_voc/'
+exit(1)
 cd $(dirname "${zip_file}")
 unzip $(basename "${zip_file}") # MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
