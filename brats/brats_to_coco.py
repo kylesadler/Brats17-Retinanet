@@ -191,9 +191,9 @@ def main():
     output_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
     brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_voc'
 
-    for f in os.listdir(os.path.join(brats_dir)):
-        for g in os.listdir(os.path.join(brats_dir, f)):
-            input_dir = os.path.join(brats_dir, f, g, "images")
+    for f in os.listdir(os.path.join(output_dir)):
+        for g in os.listdir(os.path.join(output_dir, f)):
+            input_dir = os.path.join(output_dir, f, g, "images")
             files = os.listdir(input_dir)
             # print(f)
             # print(g)
