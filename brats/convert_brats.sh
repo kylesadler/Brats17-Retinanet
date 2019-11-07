@@ -35,7 +35,7 @@ move_files "HGG"
 move_files "LGG"
 
 rm -r HGG LGG
-gunzip -vr * &
+gunzip -vr * 
 
 if [ -z $2 ]
 then
