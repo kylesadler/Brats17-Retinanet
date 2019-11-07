@@ -39,7 +39,7 @@ cd MICCAI_BraTS17_Data_Training/
 #echo $(pwd)/'MICCAI_BraTS17_Data_Training/'
 #echo $2
 
-brats_voc_dir=$1'/brats2017_voc/'
+brats_voc_dir=$1'brats2017_voc/'
 mkdir $brats_voc_dir
 # matlab -nodisplay -nosplash -nodesktop -r "try, convert_BRATS17_VOC('$(pwd)', '$brats_voc_dir'), catch me, fprintf('%s / %s\n',me.identifier,me.message) exit(1), end, exit(0)"
 
