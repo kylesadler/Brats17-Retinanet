@@ -50,7 +50,6 @@ def create_sub_masks(mask_image):
 
     return sub_masks
 
-
 def create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id, is_crowd):
     # Find contours (boundary lines) around each sub-mask
     # Note: there could be multiple contours if the object
@@ -121,7 +120,6 @@ def create_coco_instances(brats_dir, output_dir, file_names, dataset_name):
     annotation_file.write(json.dumps(data))
     annotation_file.close
 
-
 def create_images(brats_dir, output_dir, file_names, dataset_name):
     """
     {[
@@ -188,27 +186,30 @@ def create_annotations(images):
     return annotations
 
 
+def main():
+
+    brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
+
+    for f in os.listdir(brats_dir):
+        for g in os.listdir(brats_dir, f):
+            files = os.listdir(os.path.join(brats_dir, f, g))
+            print(f)
+            print(g)
+            print(files)
 
 
+            # automatically shuffles and splits trainval data 80% / 20% 
+            random.Random(1).shuffle(files)
+            trainval_split = int(0.8*len(files))
+            train_names = files[:trainval_split]
+            val_names = files[trainval_split:]
 
-brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
-files = os.listdir(os.path.join(brats_dir,'flair','images'))
-# print(files)
-
-# automatically shuffles and splits trainval data 80% / 20% 
-random.Random(1).shuffle(files)
-trainval_split = int(0.8*len(files))
-train_names = files[:trainval_split]
-val_names = files[trainval_split:]
-
-brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_coco/'
+            create_coco_instances(brats_dir, brats_coco_dir, train_names, f+g+"train2017")
+            create_coco_instances(brats_dir, brats_coco_dir, val_names, f+g+"val2017")
 
 
-
-create_coco_instances(brats_dir, brats_coco_dir, train_names, "train2017")
-create_coco_instances(brats_dir, brats_coco_dir, val_names, "val2017")
-
-
+if __name__ == "__main__":
+    main()
 
 
 
