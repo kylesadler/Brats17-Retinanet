@@ -100,7 +100,7 @@ def create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id, i
 
     return annotation
 
-def create_coco_instances(brats_dir, output_dir, file_names, dataset_name):
+def create_coco_instances(input_dir, output_dir, file_names, dataset_name):
     annotations_dir = os.path.join(output_dir, 'annotations')
     
     ensure_exists(annotations_dir)
@@ -111,7 +111,7 @@ def create_coco_instances(brats_dir, output_dir, file_names, dataset_name):
     ensure_exists(dataset_dir)
 
     data = {}
-    data["images"] = create_images(brats_dir, output_dir, file_names, dataset_name)
+    data["images"] = create_images(input_dir, output_dir, file_names, dataset_name)
     print("done creating images")
     data["annotations"] = create_annotations(data["images"])
     data["categories"] = [{"name":"tumor", "id":1}]
@@ -120,7 +120,7 @@ def create_coco_instances(brats_dir, output_dir, file_names, dataset_name):
     annotation_file.write(json.dumps(data))
     annotation_file.close
 
-def create_images(brats_dir, output_dir, file_names, dataset_name):
+def create_images(brats_dir, file_names, dataset_name):
     """
     {[
 
@@ -137,7 +137,7 @@ def create_images(brats_dir, output_dir, file_names, dataset_name):
     images = []
     for name in file_names:
         image = {}
-        img_path = os.path.join(brats_dir, 'flair','images', name)
+        img_path = os.path.join(brats_dir,'images', name)
         i = Image.open(img_path)
         width, height = i.size
         
@@ -188,12 +188,13 @@ def create_annotations(images):
 
 def main():
 
-    brats_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
+    output_dir = sys.argv[1] #'/home/kyle/datasets/brats_voc'
     brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_voc'
 
     for f in os.listdir(os.path.join(brats_dir)):
         for g in os.listdir(os.path.join(brats_dir, f)):
-            files = os.listdir(os.path.join(brats_dir, f, g, "images"))
+            input_dir = os.path.join(brats_dir, f, g, "images")
+            files = os.listdir(input_dir)
             # print(f)
             # print(g)
             # # print(files)
@@ -205,8 +206,8 @@ def main():
             train_names = files[:trainval_split]
             val_names = files[trainval_split:]
 
-            create_coco_instances(brats_dir, brats_coco_dir, train_names, f+g+"train2017")
-            create_coco_instances(brats_dir, brats_coco_dir, val_names, f+g+"val2017")
+            create_coco_instances(input_dir, output_dir, train_names, f+"_"+g+"_"+"train2017")
+            create_coco_instances(input_dir, output_dir, val_names, f+"_"+g+"_"+"val2017")
 
 
 if __name__ == "__main__":
