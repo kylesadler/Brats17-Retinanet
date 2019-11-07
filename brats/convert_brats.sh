@@ -39,7 +39,7 @@ gunzip -vr * &
 
 if [ -z $2 ]
 then
-brats_voc_dir=$(basename "${zip_file}")'brats2017_voc/'
+brats_voc_dir=$(dirname "${zip_file}")'brats2017_voc/'
 else
 brats_voc_dir=$2
 fi
