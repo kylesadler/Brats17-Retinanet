@@ -106,9 +106,9 @@ def create_coco_instances(input_dir, output_dir, file_names, dataset_name):
     ensure_exists(annotations_dir)
     
     annotation_file = open(os.path.join(annotations_dir, 'instances_'+ dataset_name+'.json'), 'a+')
-    dataset_dir = os.path.join(output_dir, dataset_name)
-    
-    ensure_exists(dataset_dir)
+    # dataset_dir = os.path.join(output_dir, dataset_name)
+    #
+    # ensure_exists(dataset_dir)
 
     data = {}
     data["images"] = create_images(input_dir, file_names, dataset_name)
@@ -206,9 +206,13 @@ def main():
             train_names = files[:trainval_split]
             val_names = files[trainval_split:]
 
-            create_coco_instances(input_dir, output_dir, train_names, f+"_"+g+"_"+"train2017")
-            create_coco_instances(input_dir, output_dir, val_names, f+"_"+g+"_"+"val2017")
+            create_coco_instances(input_dir, output_dir, train_names)
+            create_coco_instances(input_dir, output_dir, val_names)
 
+            #
+            # create_coco_instances(input_dir, output_dir, train_names, f+"_"+g+"_"+"train2017")
+            # create_coco_instances(input_dir, output_dir, val_names, f+"_"+g+"_"+"val2017")
+            #
 
 if __name__ == "__main__":
     main()

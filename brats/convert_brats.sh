@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# ./convert_brats.sh /home/kyle/datasets/ /home/kyle/datasets/test_bratscoco/
+
 if [ -z $1 ]
 then
 echo "usage:"

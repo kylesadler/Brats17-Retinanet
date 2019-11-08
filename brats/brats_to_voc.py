@@ -138,7 +138,6 @@ def main():
 
                 for mode in modes:
                     data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                    data = normalize(data)
                     file_data.append(data)
 
                     segmentation = (data > 0).astype(int) # healthy brain tissue = 1, background = 0
@@ -162,17 +161,19 @@ def main():
 
                 # slice images, normalize, and save
                 for i in range(file_data.shape[slice_axis]):
-                    slice_and_save(file_data, slice_axis, i, img_folder, file_id) #
-                    slice_and_save(seg_data, slice_axis, i, label_folder, file_id)
+                    slice_and_save(file_data, slice_axis, i, img_folder, file_id, True) #
+                    slice_and_save(seg_data, slice_axis, i, label_folder, file_id, False)
 
 def normalize(data):
     min = np.min(data)
     return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
 
 
-def slice_and_save(data, slice_axis, i, folder, file_id):
+def slice_and_save(data, slice_axis, i, folder, file_id, normalize):
 
     img = get_slice(data, slice_axis, i)
+    if(normalize):
+        img = normalize(img)
 
     if(np.max(img) - np.min(img) == 0):
         return
