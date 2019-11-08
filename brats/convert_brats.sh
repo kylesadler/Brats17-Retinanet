@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ./convert_brats.sh /home/kyle/datasets/ /home/kyle/datasets/test_bratscoco/
+# git pull; ./convert_brats.sh /home/kyle/datasets/MICCAI_BraTS17_Data_Training_for_NLe.zip /home/kyle/datasets/test_bratscoco/
 
 if [ -z $1 ]
 then
@@ -28,6 +28,8 @@ start=$(pwd)
 
 zip_file=$1
 cd $(dirname "${zip_file}")
+echo $(pwd)
+exit 1
 unzip $(basename "${zip_file}") # MICCAI_BraTS17_Data_Training_for_NLe.zip 
 cd MICCAI_BraTS17_Data_Training/
 rm survival_data.csv
