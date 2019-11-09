@@ -89,22 +89,15 @@ The labels in the provided data are: 1 for NCR & NET, 2 for ED, 4 for ET, and 0 
 
 """
 
-# TODO check direction and labels
 def main():
     input_dir = sys.argv[1] # where brats is located
-
     output_dir = sys.argv[2] # where brats VOC is created
     mkdir(output_dir)
 
     directions = ["axial", "coronal", "sagittal"]
-    modes = ["flair", "t1", "t2", "t1ce"]
-    folders = ["images", "labels", "masks"]
-
-    # things to set to 2 (target region)
-    labels = {"whole_tumor":[1,2,3,4], "tumor_core":[1,4], "enhancing_tumor":[4]}
-
     slice_axes = {"coronal":0, "sagittal":1, "axial":2}
-
+    modes = ["flair", "t1", "t2", "t1ce"]
+    labels = {"whole_tumor":[1,2,4], "tumor_core":[1,4], "enhancing_tumor":[4]}
 
     for direction in directions:
         output_path = os.path.join(output_dir, direction)
@@ -126,31 +119,39 @@ def main():
 
         for file_id in file_ids: # process each set of files
 
-            # load all mri scans from patient
-            file_data = [] # "flair", "t1", "t2", "t1ce"
-            seg_data = []
+            # load segmentation data
             raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id + "_seg.nii")).get_data()
             assert (raw_seg_data.shape == (240, 240, 155))
 
-            # get whole_tumor, enhancing_tumor, and tumor_core labels
+            # convert to whole_tumor:1, enhancing_tumor:2, and tumor_core:3, else:0 labels
+            segmentation = np.zeros(raw_seg_data.shape).astype(int)
             for labeltype in labels:
-                label = labels[labeltype]
+                for l in labels[labeltype]:
+                    segmentation += (raw_seg_data == l).astype(int)
 
-            segmentation = np.zeros(raw_seg_data.shape).astype(int)  # healthy brain tissue = 1, background = 0
-            for l in label:  # region of interest = 2
-                segmentation += (raw_seg_data == l).astype(int)
-            assert (np.max(segmentation) == 2 or l == 4)
+            
+            assert (np.max(segmentation) == 3)
             assert (np.min(segmentation) == 0)
             segmentation = normalize(segmentation)
             seg_data = np.concatenate((segmentation,segmentation,segmentation,segmentation), axis=slice_axis - 1)
 
+
+            # load all mri scans from patient
+            file_data = [] # "flair", "t1", "t2", "t1ce"
             for mode in modes:
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
-                file_data.append(data)
-
                 assert (data.shape == (240, 240, 155))
+                normalized_data = []
+                for i in range(data.shape[slice_axis]):
+                    target_shape = [240, 240, 155]
+                    target_shape[slice_axis] = 1
+                    normalized_data.append(np.reshape(normalize(get_slice(data, slice_axis, i)), target_shape))
+                normalized_data = np.concatenate(normalized_data, axis=slice_axis)
+                assert(normalized_data.shape == (240, 240, 155))
+                file_data.append(normalized_data)
 
             file_data = np.concatenate(file_data, axis=slice_axis-1)
+
 
             assert(file_data.shape == seg_data.shape)
             assert (np.max(seg_data) == 255)
@@ -158,52 +159,41 @@ def main():
             assert (np.max(file_data) == 255)
             assert (np.min(file_data) == 0)
 
+
             # slice images, normalize, and save
             for i in range(file_data.shape[slice_axis]):
 
-                img = get_slice(data, slice_axis, i)
-                if (normalize):
-                    img = normalize(img)
+                img = get_slice(file_data, slice_axis, i)
+                seg = get_slice(seg_data, slice_axis, i)
 
-                if (np.max(img) - np.min(img) == 0):
-                    return
+                if(np.max(img) - np.min(img) == 0 and np.max(seg) - np.min(seg) == 0):
+                    continue
 
-                check(img, slice_axis)
-
-                Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
-
-                img = get_slice(data, slice_axis, i)
-                if (normalize):
-                    img = normalize(img)
-
-                if (np.max(img) - np.min(img) == 0):
-                    return
-
-                check(img, slice_axis)
-
-                Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
-
-
-                # slice_and_save(file_data, slice_axis, i, img_folder, file_id, True) #
-                # slice_and_save(seg_data, slice_axis, i, label_folder, file_id, False)
+                save(img, slice_axis, i, img_folder, file_id)
+                save(seg, slice_axis, i, label_folder, file_id)
+                
+                # slice_and_save(file_data, slice_axis, i, img_folder, file_id)
+                # slice_and_save(seg_data, slice_axis, i, label_folder, file_id)
 
 def normalize(data):
     min = np.min(data)
     return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
 
-
-def slice_and_save(data, slice_axis, i, folder, file_id, normalize):
-
-    img = get_slice(data, slice_axis, i)
-    if(normalize):
-        img = normalize(img)
-
-    if(np.max(img) - np.min(img) == 0):
-        return
-
+def save(img, slice_axis, i, folder, file_id):
     check(img, slice_axis)
-
     Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
+                
+
+# def slice_and_save(data, slice_axis, i, folder, file_id):
+
+#     img = get_slice(data, slice_axis, i)
+
+#     if(np.max(img) - np.min(img) == 0):
+#         return
+
+#     check(img, slice_axis)
+
+#     Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
 
 
 '''
