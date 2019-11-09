@@ -91,7 +91,9 @@ def main():
                 
                 normalized_mri = []
                 for i in range(mri_scan.shape[slice_axis]):
-                    normalized_mri.append(np.reshape(normalize(get_slice(mri_scan, slice_axis, i)), target_shape))
+                    mri = np.reshape(normalize(get_slice(mri_scan, slice_axis, i)), target_shape)
+                    check_normalized(mri)
+                    normalized_mri.append(mri)
                 
                 normalized_mri = np.concatenate(normalized_mri, axis=slice_axis)
                 assert(normalized_mri.shape == (240, 240, 155))
@@ -103,11 +105,8 @@ def main():
             seg_data = np.concatenate((segmentation,segmentation,segmentation,segmentation), axis=slice_axis-1)
 
             assert(file_data.shape == seg_data.shape)
-            assert (np.max(seg_data) == 255)
-            assert (np.min(seg_data) == 0)
-            assert (np.max(file_data) == 255)
-            assert (np.min(file_data) == 0)
-
+            check_normalized(seg_data)
+            check_normalized(file_data)
 
             # slice images, normalize, and save
             img_folder = os.path.join(output_path, "images")
@@ -124,9 +123,177 @@ def main():
 
                 save(img, slice_axis, i, img_folder, file_id)
                 save(seg, slice_axis, i, label_folder, file_id)
-                
-        
 
+
+def process(path, has_label=True):
+    label = np.array(
+            nib_load(path + 'seg.nii.gz'), dtype='uint8', order='C')
+
+    images = np.stack([
+        np.array(nib_load(path + modal + '.nii.gz'), dtype='float32', order='C')
+        for modal in modalities], -1)
+
+    mask  = images.sum(-1) > 0
+
+    for k in range(4):
+        x = images[..., k]
+        y = x[mask]
+        lower = np.percentile(y, 0.2)
+        upper = np.percentile(y, 99.8)
+        x[mask & (x < lower)] = lower
+        x[mask & (x > upper)] = upper
+
+        y = x[mask]
+
+        # 0.8885
+        #x[mask] -= y.mean()
+        #x[mask] /= y.std()
+
+        # 0.909
+        x -= y.mean()
+        x /= y.std()
+
+        #0.8704
+        #x /= y.mean()
+
+        images[..., k] = x
+
+    #return images, label
+
+    #output = path + 'data_f32_divm.pkl'
+    output = path + 'data_f32.pkl'
+    with open(output, 'wb') as f:
+        pickle.dump((images, label), f)
+
+    #mean, std = [], []
+    #for k in range(4):
+    #    x = images[..., k]
+    #    y = x[mask]
+    #    lower = np.percentile(y, 0.2)
+    #    upper = np.percentile(y, 99.8)
+    #    x[mask & (x < lower)] = lower
+    #    x[mask & (x > upper)] = upper
+
+    #    y = x[mask]
+
+    #    mean.append(y.mean())
+    #    std.append(y.std())
+
+    #    images[..., k] = x
+    #path = '/home/thuyen/FastData/'
+    #output = path + 'data_i16.pkl'
+    #with open(output, 'wb') as f:
+    #    pickle.dump((images, mask, mean, std, label), f)
+
+    if not has_label:
+        return
+
+    for patch_shape in patch_shapes:
+        dist2center = get_dist2center(patch_shape)
+
+        sx, sy, sz = dist2center[:, 0]                # left-most boundary
+        ex, ey, ez = mask.shape - dist2center[:, 1]   # right-most boundary
+        shape = mask.shape
+        maps = np.zeros(shape, dtype="int16")
+        maps[sx:ex, sy:ey, sz:ez] = 1
+
+        fg = (label > 0).astype('int16')
+        bg = ((mask > 0) * (fg == 0)).astype('int16')
+
+        fg = fg * maps
+        bg = bg * maps
+
+        fg = np.stack(fg.nonzero()).T.astype('uint8')
+        bg = np.stack(bg.nonzero()).T.astype('uint8')
+
+        suffix = '{}x{}x{}_'.format(*patch_shape)
+
+        output = path + suffix + 'coords.pkl'
+        with open(output, 'wb') as f:
+            pickle.dump((fg, bg), f)
+"""
+
+import glob
+import os
+import warnings
+import shutil
+import argparse
+import SimpleITK as sitk
+import numpy as np
+from tqdm import tqdm
+from nipype.interfaces.ants import N4BiasFieldCorrection
+
+def N4BiasFieldCorrect(filename, output_filename):
+    normalized = N4BiasFieldCorrection()
+    normalized.inputs.input_image = filename
+    normalized.inputs.output_image = output_filename
+    normalized.run()
+    return None
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', help='training data path', default="/data/dataset/BRATS2018/training/")
+    parser.add_argument('--out', help="output path", default="./N4_Normalized")
+    parser.add_argument('--mode', help="output path", default="training")
+    args = parser.parse_args()
+    if args.mode == 'test':
+        BRATS_data = glob.glob(args.data + "/*")
+        patient_ids = [x.split("/")[-1] for x in BRATS_data]
+        print("Processing Testing data ...")
+        for idx, file_name in tqdm(enumerate(BRATS_data), total=len(BRATS_data)):
+            mod = glob.glob(file_name+"/*.nii*")
+            output_dir = "{}/test/{}/".format(args.out, patient_ids[idx])
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            for mod_file in mod:
+                if 'flair' not in mod_file and 'seg' not in mod_file:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    N4BiasFieldCorrect(mod_file, output_path)
+                else:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    shutil.copy(mod_file, output_path)
+    else:
+        HGG_data = glob.glob(args.data + "HGG/*")
+        LGG_data = glob.glob(args.data + "LGG/*")
+        hgg_patient_ids = [x.split("/")[-1] for x in HGG_data]
+        lgg_patient_ids = [x.split("/")[-1] for x in LGG_data]
+        print("Processing HGG ...")
+        for idx, file_name in tqdm(enumerate(HGG_data), total=len(HGG_data)):
+            mod = glob.glob(file_name+"/*.nii*")
+            output_dir = "{}/HGG/{}/".format(args.out, hgg_patient_ids[idx])
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            for mod_file in mod:
+                if 'flair' not in mod_file and 'seg' not in mod_file:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    N4BiasFieldCorrect(mod_file, output_path)
+                else:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    shutil.copy(mod_file, output_path)
+        print("Processing LGG ...")
+        for idx, file_name in tqdm(enumerate(LGG_data), total=len(LGG_data)):
+            mod = glob.glob(file_name+"/*.nii*")
+            output_dir = "{}/LGG/{}/".format(args.out, lgg_patient_ids[idx])
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            for mod_file in mod:
+                if 'flair' not in mod_file and 'seg' not in mod_file:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    N4BiasFieldCorrect(mod_file, output_path)
+                else:
+                    output_path = "{}/{}".format(output_dir, mod_file.split("/")[-1])
+                    shutil.copy(mod_file, output_path)
+
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+        
+def check_normalized(data):
+    assert (np.max(data) == 255)
+    assert (np.min(data) == 0)
 
 def mkdir(path):
 	if(not os.path.exists(path)):
