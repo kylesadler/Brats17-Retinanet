@@ -4,7 +4,8 @@ import sys
 import numpy as np
 from PIL import Image
 
-"""
+""" 
+info
 	purpose: convert brats dataset into coco format
 	
 	input format:
@@ -13,44 +14,128 @@ from PIL import Image
 		segmentation .nii
 	
 	output format:
-		(240*4) x 240 x 3 grayscale images of the four modes
-		stacked on top of each other
+		mri_images is (240*4) x 240 x 3 grayscale images of the four modes stacked on top of each other
 		
-		target is label of the brain stacked 4 times
+		target is label of the brain stacked 4 times with 4 labels: 
+            whole_tumor
+            tumor_core
+            enhancing_tumor
+            everything_else
 		
-		repeat for each view (axial, sagittal, corneal)
-		repeat for each type: whole_tumor, tumor_core, enhancing_tumor
+		repeated for each view (axial, sagittal, corneal)
 		
 		output_dir
-			|-> enhancing_tumor
-			|-> tumor_core
-			|-> whole_tumor
-				|-> corneal
-				|-> sagittal
-				|-> axial
-					|-> labels
-					|-> masks
-					|-> images
-						|-> 0000001.png
-						|-> 0000002.png
-						...
-		
-	labels: 
-	1,2,3,4 = enhancing_tumor,”
-“non-enhancing (solid) core,” “necrotic (or fluid-filled) core,”
-and “non-enhancing core
-	
+            |-> corneal
+            |-> sagittal
+            |-> axial
+                |-> labels
+                |-> images
+                    |-> 0000001.png
+                    |-> 0000002.png
+                    ...
 """
+
+def main():
+    input_dir = sys.argv[1] # where brats is located
+    output_dir = sys.argv[2] # where brats VOC is created
+    mkdir(output_dir)
+
+    directions = ["axial", "coronal", "sagittal"]
+    slice_axes = {"coronal":0, "sagittal":1, "axial":2}
+    modes = ["flair", "t1", "t2", "t1ce"]
+    labels = {"whole_tumor":[1,2,4], "tumor_core":[1,4], "enhancing_tumor":[4]}
+
+    file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
+    # print('file_ids')
+    # print(file_ids)               
+
+    for file_id in file_ids: # process each set of files
+            
+        # load segmentation data
+        raw_seg_data = nibabel.load(os.path.join(input_dir, "seg", file_id + "_seg.nii")).get_data()
+        assert (raw_seg_data.shape == (240, 240, 155))
+
+        # convert to whole_tumor:1, enhancing_tumor:2, and tumor_core:3, else:0 labels
+        segmentation = np.zeros(raw_seg_data.shape).astype(int)
+        for labeltype in labels:
+            for l in labels[labeltype]:
+                segmentation += (raw_seg_data == l).astype(int)
+        assert (np.max(segmentation) == 3)
+        assert (np.min(segmentation) == 0)
+        segmentation = normalize(segmentation)
+        
+
+
+        # load all mri scans from patient
+        mri_scans = [] # "flair", "t1", "t2", "t1ce"
+        for mode in modes:
+            data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
+            assert (data.shape == (240, 240, 155))
+            mri_scans.append(data)
+            
+
+
+        for direction in directions:
+            output_path = os.path.join(output_dir, direction)
+            if(os.path.exists(output_path)):
+                continue
+            mkdir(output_path)
+
+            slice_axis = slice_axes[direction]
+            target_shape = [240, 240, 155] # for each non-concatenated slice
+            target_shape[slice_axis] = 1
+
+            # normalize each image slice in mri_scans
+            mri_data = []
+            for mri_scan in mri_scans:
+                
+                normalized_mri = []
+                for i in range(mri_scan.shape[slice_axis]):
+                    normalized_mri.append(np.reshape(normalize(get_slice(mri_scan, slice_axis, i)), target_shape))
+                
+                normalized_mri = np.concatenate(normalized_mri, axis=slice_axis)
+                assert(normalized_mri.shape == (240, 240, 155))
+                
+                mri_data.append(normalized_mri)
+
+
+            file_data = np.concatenate(mri_data, axis=slice_axis-1)
+            seg_data = np.concatenate((segmentation,segmentation,segmentation,segmentation), axis=slice_axis-1)
+
+            assert(file_data.shape == seg_data.shape)
+            assert (np.max(seg_data) == 255)
+            assert (np.min(seg_data) == 0)
+            assert (np.max(file_data) == 255)
+            assert (np.min(file_data) == 0)
+
+
+            # slice images, normalize, and save
+            img_folder = os.path.join(output_path, "images")
+            mkdir(img_folder)
+            label_folder = os.path.join(output_path, "labels")
+            mkdir(label_folder)
+            for i in range(file_data.shape[slice_axis]):
+
+                img = get_slice(file_data, slice_axis, i)
+                seg = get_slice(seg_data, slice_axis, i)
+
+                if(np.max(img) - np.min(img) == 0 and np.max(seg) - np.min(seg) == 0):
+                    continue
+
+                save(img, slice_axis, i, img_folder, file_id)
+                save(seg, slice_axis, i, label_folder, file_id)
+                
+        
+
 
 def mkdir(path):
 	if(not os.path.exists(path)):
 		os.mkdir(path)
 
-
 def get_file_id(file):
 	return "_".join(file.split("_")[:-1])
 
-def check(nparray, slice_axis):
+def check_dims(nparray, slice_axis):
 	if(slice_axis == 0):
 		assert(nparray.shape == (240, 620))
 	elif(slice_axis == 1):
@@ -59,7 +144,6 @@ def check(nparray, slice_axis):
 		assert(nparray.shape == (240, 960))
 	else:
 		raise
-	
 
 def get_slice(ndarray, slice_axis, i):
 	if(slice_axis == 0):
@@ -70,25 +154,38 @@ def get_slice(ndarray, slice_axis, i):
 		return ndarray[:,:,i]
 	else:
 		raise
-'''input_dir = '/home/kyle/datasets/brats/'        # where brats is located
-output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
 
-The WT describes the union of the ET, NET and
-ED, whereas the TC describes the union of the ET and NET.
-'''
-# whole_tumor is 1,2,4
-# tumor_core is 1,4
-# enhancing_tumor is 4
+def normalize(data):
+    min = np.min(data)
+    return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
 
+def save(img, slice_axis, i, folder, file_id):
+    check_dims(img, slice_axis)
+    Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
 
+if __name__ == '__main__':
+    main()
 
-"""
-
-The sub-regions considered for evaluation are: 1) the "enhancing tumor" (ET), 2) the "tumor core" (TC), and 3) the "whole tumor" (WT) [see figure below]. The ET is described by areas that show hyper-intensity in T1Gd when compared to T1, but also when compared to “healthy” white matter in T1Gd. The TC describes the bulk of the tumor, which is what is typically resected. The TC entails the ET, as well as the necrotic (fluid-filled) and the non-enhancing (solid) parts of the tumor. The appearance of the necrotic (NCR) and the non-enhancing (NET) tumor core is typically hypo-intense in T1-Gd when compared to T1. The WT describes the complete extent of the disease, as it entails the TC and the peritumoral edema (ED), which is typically depicted by hyper-intense signal in FLAIR.
-The labels in the provided data are: 1 for NCR & NET, 2 for ED, 4 for ET, and 0 for everything else.
 
 """
+label information
+    input_dir = '/home/kyle/datasets/brats/'        # where brats is located
+    output_dir = '/home/kyle/datasets/brats_VOC/'   # where brats VOC is created 
 
+    The WT describes the union of the ET, NET and
+    ED, whereas the TC describes the union of the ET and NET.
+
+    The sub-regions considered for evaluation are: 1) the "enhancing tumor" (ET), 2) the "tumor core" (TC), and 3) the "whole tumor" (WT) [see figure below]. The ET is described by areas that show hyper-intensity in T1Gd when compared to T1, but also when compared to “healthy” white matter in T1Gd. The TC describes the bulk of the tumor, which is what is typically resected. The TC entails the ET, as well as the necrotic (fluid-filled) and the non-enhancing (solid) parts of the tumor. The appearance of the necrotic (NCR) and the non-enhancing (NET) tumor core is typically hypo-intense in T1-Gd when compared to T1. The WT describes the complete extent of the disease, as it entails the TC and the peritumoral edema (ED), which is typically depicted by hyper-intense signal in FLAIR.
+    The labels in the provided data are: 1 for NCR & NET, 2 for ED, 4 for ET, and 0 for everything else.
+
+    # whole_tumor is 1,2,4
+    # tumor_core is 1,4
+    # enhancing_tumor is 4
+    labels: 
+    “non-enhancing (solid) core,” “necrotic (or fluid-filled) core,”
+    and “non-enhancing core
+"""
+"""
 def main():
     input_dir = sys.argv[1] # where brats is located
     output_dir = sys.argv[2] # where brats VOC is created
@@ -141,14 +238,15 @@ def main():
             for mode in modes:
                 data = nibabel.load(os.path.join(input_dir, mode, file_id+"_"+mode+".nii")).get_data()
                 assert (data.shape == (240, 240, 155))
-                normalized_data = []
+                
+                normalized_mri = []
                 for i in range(data.shape[slice_axis]):
                     target_shape = [240, 240, 155]
                     target_shape[slice_axis] = 1
-                    normalized_data.append(np.reshape(normalize(get_slice(data, slice_axis, i)), target_shape))
-                normalized_data = np.concatenate(normalized_data, axis=slice_axis)
-                assert(normalized_data.shape == (240, 240, 155))
-                file_data.append(normalized_data)
+                    normalized_mri.append(np.reshape(normalize(get_slice(data, slice_axis, i)), target_shape))
+                normalized_mri = np.concatenate(normalized_mri, axis=slice_axis)
+                assert(normalized_mri.shape == (240, 240, 155))
+                file_data.append(normalized_mri)
 
             file_data = np.concatenate(file_data, axis=slice_axis-1)
 
@@ -174,28 +272,19 @@ def main():
                 
                 # slice_and_save(file_data, slice_axis, i, img_folder, file_id)
                 # slice_and_save(seg_data, slice_axis, i, label_folder, file_id)
+"""               
+"""
+def slice_and_save(data, slice_axis, i, folder, file_id):
 
-def normalize(data):
-    min = np.min(data)
-    return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
+    img = get_slice(data, slice_axis, i)
 
-def save(img, slice_axis, i, folder, file_id):
-    check(img, slice_axis)
+    if(np.max(img) - np.min(img) == 0):
+        return
+
+    check_dims(img, slice_axis)
+
     Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
-                
-
-# def slice_and_save(data, slice_axis, i, folder, file_id):
-
-#     img = get_slice(data, slice_axis, i)
-
-#     if(np.max(img) - np.min(img) == 0):
-#         return
-
-#     check(img, slice_axis)
-
-#     Image.fromarray(img, "L").save(os.path.join(folder, file_id + "_" + str(i) + ".png"))
-
-
+"""
 '''
 def create_data(input_path, seg_path,  output_img, output_label, output_mask, subsec0, seg_file_end, flair_label):
     input_list = dir([input_path, '*.nii']);
@@ -241,17 +330,10 @@ def create_data(input_path, seg_path,  output_img, output_label, output_mask, su
 
     end
 '''
-
-
-"""end
-% flair_label = [1, 2, 3, 4]; %whole tumor
-% t1_label= 1; % tumor core?
-% t2_label= 3;
-% t1ce_label= 4;
-
-Le 645
-
 """
-
-if __name__ == '__main__':
-    main()
+def collapse_this():
+    % flair_label = [1, 2, 3, 4]; %whole tumor
+    % t1_label= 1; % tumor core?
+    % t2_label= 3;
+    % t1ce_label= 4;
+"""
