@@ -1,0 +1,23 @@
+mkdir: cannot create directory ‘/home/kyle/datasets/test_bratscoco/’: File exists
+/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py:327: RuntimeWarning: invalid value encountered in true_divide
+  return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
+Traceback (most recent call last):
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 334, in <module>
+    main()
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 95, in main
+    check_normalized(mri)
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 295, in check_normalized
+    assert (np.max(data) == 255)
+AssertionError
+mkdir: cannot create directory ‘/home/kyle/datasets/test_bratscoco/’: File exists
+/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py:328: RuntimeWarning: invalid value encountered in true_divide
+  return ((data - min) / (np.max(data) - min) * 255).astype(np.uint8)
+(240, 1, 155)
+Traceback (most recent call last):
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 335, in <module>
+    main()
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 96, in main
+    check_normalized(mri)
+  File "/home/kyle/research/Brats17-Retinanet/brats/brats_to_voc.py", line 296, in check_normalized
+    assert (np.max(data) == 255)
+AssertionError
