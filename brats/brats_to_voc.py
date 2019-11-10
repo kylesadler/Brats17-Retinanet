@@ -47,7 +47,10 @@ def main():
 
     file_ids = [get_file_id(x) for x in os.listdir(os.path.join(input_dir, "seg"))]
     # print('file_ids')
-    # print(file_ids)               
+    # print(file_ids)
+
+    num_files = len(file_ids)
+    file_count = 0
 
     for file_id in file_ids: # process each set of files
             
@@ -134,6 +137,12 @@ def main():
 
                 save(img, slice_axis, i, img_folder, file_id)
                 save(seg, slice_axis, i, label_folder, file_id)
+
+
+        file_count += 1
+        if(file_count % 50 == 0):
+            print("files processed: "+file_count+" / "+num_files)
+
 
 
 def process(path, has_label=True):

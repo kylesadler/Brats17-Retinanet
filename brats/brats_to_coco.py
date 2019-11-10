@@ -192,22 +192,21 @@ def main():
     brats_coco_dir = sys.argv[2] #'/home/kyle/datasets/brats_voc'
 
     for f in os.listdir(os.path.join(output_dir)):
-        for g in os.listdir(os.path.join(output_dir, f)):
-            input_dir = os.path.join(output_dir, f, g, "images")
-            files = os.listdir(input_dir)
-            # print(f)
-            # print(g)
-            # # print(files)
+        input_dir = os.path.join(output_dir, f, "images")
+        files = os.listdir(input_dir)
+        # print(f)
+        # print(g)
+        # # print(files)
 
 
-            # automatically shuffles and splits trainval data 80% / 20% 
-            random.Random(1).shuffle(files)
-            trainval_split = int(0.8*len(files))
-            train_names = files[:trainval_split]
-            val_names = files[trainval_split:]
+        # automatically shuffles and splits trainval data 80% / 20%
+        random.Random(1).shuffle(files)
+        trainval_split = int(0.8*len(files))
+        train_names = files[:trainval_split]
+        val_names = files[trainval_split:]
 
-            create_coco_instances(input_dir, output_dir, train_names, f+"_"+g+"_"+"train2017")
-            create_coco_instances(input_dir, output_dir, val_names, f+"_"+g+"_"+"val2017")
+        create_coco_instances(input_dir, output_dir, train_names, f+"_train2017")
+        create_coco_instances(input_dir, output_dir, val_names, f+"_val2017")
 
 
 if __name__ == "__main__":
